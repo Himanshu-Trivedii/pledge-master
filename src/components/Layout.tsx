@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Home, Users, Package, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "./theme-toggle";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -21,8 +22,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border">
         <div className="p-6 border-b border-border">
-          <h1 className="text-2xl font-bold text-gold">Gode Jewellers</h1>
-          <p className="text-sm text-muted-foreground">Loan Management</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gold">Gode Jewellers</h1>
+              <p className="text-sm text-muted-foreground">Loan Management</p>
+            </div>
+            <ThemeToggle />
+          </div>
         </div>
 
         <nav className="p-4 space-y-2">
