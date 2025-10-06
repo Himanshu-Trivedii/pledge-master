@@ -8,6 +8,55 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Light theme variables */
+    --background: 0 0% 100%;
+    --foreground: 220 15% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 7%;
+
+    --primary: 43 96% 56%;
+    --primary-foreground: 220 15% 7%;
+
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 15% 7%;
+
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 15% 40%;
+
+    --accent: 43 96% 56%;
+    --accent-foreground: 220 15% 7%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 85%;
+    --input: 220 15% 85%;
+    --ring: 43 96% 56%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 15% 7%;
+    --sidebar-primary: 43 96% 56%;
+    --sidebar-primary-foreground: 220 15% 7%;
+    --sidebar-accent: 220 15% 92%;
+    --sidebar-accent-foreground: 220 15% 7%;
+    --sidebar-border: 220 15% 85%;
+    --sidebar-ring: 43 96% 56%;
+
+    /* Custom tokens for jewelry management */
+    --gold: 43 96% 56%;
+    --gold-dark: 43 80% 45%;
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+  }
+
+  .dark {
     --background: 220 15% 7%;
     --foreground: 40 10% 95%;
 
@@ -36,8 +85,6 @@ All colors MUST be HSL.
     --input: 220 15% 20%;
     --ring: 43 96% 56%;
 
-    --radius: 0.5rem;
-
     --sidebar-background: 220 15% 10%;
     --sidebar-foreground: 40 10% 95%;
     --sidebar-primary: 43 96% 56%;
@@ -46,13 +93,6 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 40 10% 95%;
     --sidebar-border: 220 15% 20%;
     --sidebar-ring: 43 96% 56%;
-
-    /* Custom tokens for jewelry management */
-    --gold: 43 96% 56%;
-    --gold-dark: 43 80% 45%;
-    --success: 142 76% 36%;
-    --warning: 38 92% 50%;
-    --info: 199 89% 48%;
   }
 }
 
