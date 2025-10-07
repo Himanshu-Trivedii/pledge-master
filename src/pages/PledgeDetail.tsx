@@ -40,7 +40,7 @@ const PledgeDetail = () => {
     const fetchPledgeData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:8080/api/pledges/${id}`, {
+        const response = await fetch(`http://localhost:8099/api/pledges/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

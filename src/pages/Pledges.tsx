@@ -28,7 +28,7 @@ const Pledges = () => {
     const fetchPledges = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8080/api/pledges", {
+        const response = await fetch("http://localhost:8099/api/pledges", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

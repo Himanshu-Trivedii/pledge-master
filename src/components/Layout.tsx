@@ -1,67 +1,119 @@
-import { Link, useLocation } from "react-router-dom";
-import { Home, Users, Package, LogOut } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  LayoutGrid,
+  Users,
+  Wallet,
+  LogOut,
+  Menu,
+  X
+} from "lucide-react";
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
+interface LayoutProps {
+  children: React.ReactNode;
+}
 
-  const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Customers", href: "/customers", icon: Users },
-    { name: "Pledges", href: "/pledges", icon: Package },
-  ];
+const Layout = ({ children }: LayoutProps) => {
+  const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/";
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+    navigate("/login");
   };
+
+  const menuItems = [
+    {
+      title: "Dashboard",
+      icon: <LayoutGrid className="h-5 w-5" />,
+      path: "/dashboard",
+    },
+    {
+      title: "Customers",
+      icon: <Users className="h-5 w-5" />,
+      path: "/customers",
+    },
+    {
+      title: "Pledges",
+      icon: <Wallet className="h-5 w-5" />,
+      path: "/pledges",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border">
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gold">Gode Jewellers</h1>
-              <p className="text-sm text-muted-foreground">Loan Management</p>
-            </div>
-            <ThemeToggle />
+      <aside
+        className={`fixed top-0 left-0 z-40 h-screen transition-transform ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } bg-card border-r w-64`}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between p-4">
+            <h2 className="text-lg font-semibold">Pledge Master</h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(false)}
+              className="md:hidden"
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
-        </div>
 
-        <nav className="p-4 space-y-2">
-          {navigation.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link key={item.name} to={item.href}>
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  className="w-full justify-start"
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </Button>
-              </Link>
-            );
-          })}
-        </nav>
+          <nav className="flex-1 space-y-1 p-4">
+            {menuItems.map((item) => (
+              <Button
+                key={item.path}
+                variant="ghost"
+                className={`w-full justify-start gap-2 ${
+                  location.pathname === item.path ? "bg-muted" : ""
+                }`}
+                onClick={() => navigate(item.path)}
+              >
+                {item.icon}
+                {item.title}
+              </Button>
+            ))}
+          </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={handleLogout}
-          >
-            <LogOut className="mr-3 h-5 w-5" />
-            Logout
-          </Button>
+          <div className="p-4 border-t space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Theme</span>
+              <ThemeToggle />
+            </div>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-destructive gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5" />
+              Logout
+            </Button>
+          </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="ml-64 p-8">{children}</main>
+      <div className={`${isSidebarOpen ? "md:ml-64" : ""}`}>
+        <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
+          <div className="flex h-14 items-center gap-4 px-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`md:hidden`}
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+        </header>
+        <main>{children}</main>
+      </div>
     </div>
   );
 };

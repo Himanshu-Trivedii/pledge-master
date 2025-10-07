@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Calculator } from "lucide-react";
 import { z } from "zod";
+import CustomerPhotoCapture from "@/components/CustomerPhotoCapture";
 
 const pledgeSchema = z.object({
   customerId: z.number().min(1, "Please select a customer"),
@@ -19,6 +20,9 @@ const pledgeSchema = z.object({
   loanAmount: z.number().min(1, "Loan amount must be at least ₹1").max(10000000, "Loan amount too high"),
   pledgeDuration: z.number().min(1, "Duration must be at least 1 month").max(120, "Duration too long"),
   notes: z.string().trim().max(1000, "Notes too long").optional(),
+  customerPhoto: z.string().optional(),
+  itemPhoto: z.string().optional(),
+  receiptPhoto: z.string().optional(),
 });
 
 type PledgeFormData = z.infer<typeof pledgeSchema>;
@@ -41,6 +45,9 @@ const NewPledge = () => {
     loanAmount: 0,
     pledgeDuration: 12,
     notes: "",
+    customerPhoto: "",
+    itemPhoto: "",
+    receiptPhoto: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof PledgeFormData, string>>>({});
   const [calculatedInterest, setCalculatedInterest] = useState<{
@@ -53,7 +60,7 @@ const NewPledge = () => {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8080/api/customers", {
+        const response = await fetch("http://localhost:8099/api/customers", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
@@ -104,6 +111,13 @@ const NewPledge = () => {
     }
   };
 
+  const handlePhotoCapture = (type: 'customer' | 'item' | 'receipt', photoData: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [`${type}Photo`]: photoData
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -124,7 +138,7 @@ const NewPledge = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/pledges", {
+      const response = await fetch("http://localhost:8099/api/pledges", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -342,6 +356,35 @@ const NewPledge = () => {
                 Enter loan amount and duration to calculate interest
               </p>
             )}
+          </Card>
+        </div>
+
+        {/* Photo Capture Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="p-6 lg:col-span-2">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Photo Capture</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Customer Photo</Label>
+                <CustomerPhotoCapture
+                  onPhotoCapture={(photo) => handlePhotoCapture('customer', photo)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Item Photo</Label>
+                <CustomerPhotoCapture
+                  onPhotoCapture={(photo) => handlePhotoCapture('item', photo)}
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label>Receipt Photo</Label>
+                <CustomerPhotoCapture
+                  onPhotoCapture={(photo) => handlePhotoCapture('receipt', photo)}
+                />
+              </div>
+            </div>
           </Card>
         </div>
       </div>

@@ -45,7 +45,7 @@ const CustomerDetail = () => {
         
         // Fetch customer details
         const customerResponse = await fetch(
-          `http://localhost:8080/api/customers/${id}`,
+          `http://localhost:8099/api/customers/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -57,7 +57,7 @@ const CustomerDetail = () => {
 
           // Fetch customer's pledges
           const pledgesResponse = await fetch(
-            `http://localhost:8080/api/customers/${id}/pledges`,
+            `http://localhost:8099/api/customers/${id}/pledges`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }

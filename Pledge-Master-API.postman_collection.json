@@ -1,0 +1,249 @@
+{
+    "info": {
+        "_postman_id": "7c5b3b1c-8b0e-4b5e-9b0a-9b0b9b0b9b0b",
+        "name": "Pledge Master API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/api/auth/login",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "auth", "login"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Pledges",
+            "item": [
+                {
+                    "name": "Create Pledge",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Gold Necklace Pledge\",\n    \"description\": \"22K Gold Necklace\",\n    \"amount\": 45000,\n    \"deadline\": \"2025-12-31T23:59:59\",\n    \"customerId\": 1,\n    \"itemPhoto\": \"base64-encoded-image\",\n    \"customerPhoto\": \"base64-encoded-image\",\n    \"receiptPhoto\": \"base64-encoded-image\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/api/pledges",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "pledges"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Pledges",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8080/api/pledges",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "pledges"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Pledge by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8080/api/pledges/1",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "pledges", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Pledge",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Updated Gold Necklace Pledge\",\n    \"description\": \"Updated 22K Gold Necklace\",\n    \"amount\": 50000,\n    \"deadline\": \"2025-12-31T23:59:59\",\n    \"customerId\": 1,\n    \"itemPhoto\": \"base64-encoded-image\",\n    \"customerPhoto\": \"base64-encoded-image\",\n    \"receiptPhoto\": \"base64-encoded-image\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/api/pledges/1",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "pledges", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Pledge",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8080/api/pledges/1",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "pledges", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Calculate Interest",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8080/api/pledges/1/calculate-interest",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "pledges", "1", "calculate-interest"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Total Amount",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8080/api/pledges/1/total-amount",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "pledges", "1", "total-amount"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Transactions",
+            "item": [
+                {
+                    "name": "Create Transaction",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"pledgeId\": 1,\n    \"amount\": 5000,\n    \"type\": \"PAYMENT\",\n    \"description\": \"Monthly payment\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/api/transactions",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "transactions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Transactions by Pledge",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8080/api/transactions/pledge/1",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "transactions", "pledge", "1"]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "token",
+            "value": "your-jwt-token-here"
+        }
+    ]
+}
+

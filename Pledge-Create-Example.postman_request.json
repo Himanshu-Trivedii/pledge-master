@@ -1,0 +1,29 @@
+{
+    "name": "Create Pledge Request Example",
+    "request": {
+        "method": "POST",
+        "header": [
+            {
+                "key": "Content-Type",
+                "value": "application/json"
+            },
+            {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+            }
+        ],
+        "body": {
+            "mode": "raw",
+            "raw": "{\n    \"customerId\": 1,\n    \"title\": \"Gold Chain Pledge\",\n    \"description\": \"22K Gold Chain with pendant\",\n    \"amount\": 75000.00,\n    \"deadline\": \"2026-12-31T23:59:59\",\n    \"pledgeDuration\": 12,\n    \"itemType\": \"Gold Chain\",\n    \"weight\": 25.5,\n    \"purity\": \"22K\",\n    \"notes\": \"Good condition, includes pendant\",\n    \"customerPhoto\": \"base64_encoded_customer_photo_here\",\n    \"itemPhoto\": \"base64_encoded_item_photo_here\",\n    \"receiptPhoto\": \"base64_encoded_receipt_photo_here\"\n}"
+        },
+        "url": {
+            "raw": "http://localhost:8080/api/pledges",
+            "protocol": "http",
+            "host": ["localhost"],
+            "port": "8080",
+            "path": ["api", "pledges"]
+        },
+        "description": "Creates a new pledge with all required fields and validation"
+    }
+}
+

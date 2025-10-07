@@ -1,5 +1,6 @@
 package com.pledge.backend.dto.request;
 
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,12 +9,62 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class PledgeRequest {
+    @NotNull(message = "Customer ID is required")
+    private Long customerId;
+
+    @NotBlank(message = "Title is required")
+    @Size(max = 100, message = "Title must be less than 100 characters")
     private String title;
+
+    @NotBlank(message = "Description is required")
+    @Size(max = 500, message = "Description must be less than 500 characters")
     private String description;
-    private LocalDateTime deadline;
+
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be greater than 0")
+    @DecimalMax(value = "10000000", message = "Amount cannot exceed 1 Crore")
     private Double amount;
-    private Long userId;
+
+    @NotNull(message = "Deadline is required")
+    @Future(message = "Deadline must be in the future")
+    private LocalDateTime deadline;
+
+    @NotNull(message = "Pledge duration is required")
+    @Min(value = 1, message = "Duration must be at least 1 month")
+    @Max(value = 60, message = "Duration cannot exceed 60 months")
+    private Integer pledgeDuration;
+
+    @Size(max = 1000000, message = "Customer photo size too large")
+    private String customerPhoto;
+
+    @NotBlank(message = "Item photo is required")
+    @Size(max = 1000000, message = "Item photo size too large")
+    private String itemPhoto;
+
+    @Size(max = 1000000, message = "Receipt photo size too large")
+    private String receiptPhoto;
+
+    // Additional fields for pledge details
+    @NotBlank(message = "Item type is required")
+    private String itemType;
+
+    @NotNull(message = "Weight is required")
+    @Positive(message = "Weight must be greater than 0")
+    private Double weight;
+
+    @NotBlank(message = "Purity is required")
+    @Pattern(regexp = "^(24K|22K|18K|14K)$", message = "Invalid purity value")
+    private String purity;
+
+	@NotNull(message = "Interest rate is required")
+	@DecimalMin(value = "0.0", message = "Interest rate must be positive")
+	private Double interestRate;
+
+	@NotBlank(message = "Status is required")
+	private String status;
+
+	private String notes;
 }

@@ -1,6 +1,7 @@
 package com.pledge.backend.controller;
 
-import com.pledge.backend.dto.TransactionDto;
+import com.pledge.backend.dto.request.TransactionRequest;
+import com.pledge.backend.dto.response.TransactionResponse;
 import com.pledge.backend.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,39 +12,40 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class TransactionController {
-    
+
     private final TransactionService transactionService;
 
     @PostMapping
-    public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionDto transactionDto) {
-        return ResponseEntity.ok(transactionService.createTransaction(transactionDto));
+    public ResponseEntity<TransactionResponse> createTransaction(@RequestBody TransactionRequest request) {
+        return ResponseEntity.ok(transactionService.createTransaction(request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionDto> getTransactionById(@PathVariable Long id) {
+    public ResponseEntity<TransactionResponse> getTransaction(@PathVariable Long id) {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
 
-    @GetMapping
-    public ResponseEntity<List<TransactionDto>> getAllTransactions() {
-        return ResponseEntity.ok(transactionService.getAllTransactions());
-    }
-
     @GetMapping("/pledge/{pledgeId}")
-    public ResponseEntity<List<TransactionDto>> getTransactionsByPledgeId(@PathVariable Long pledgeId) {
-        return ResponseEntity.ok(transactionService.getTransactionsByPledgeId(pledgeId));
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByPledgeId(@PathVariable Long pledgeId) {
+        return ResponseEntity.ok(transactionService.getAllTransactionsByPledgeId(pledgeId));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TransactionDto> updateTransaction(@PathVariable Long id, @RequestBody TransactionDto transactionDto) {
-        return ResponseEntity.ok(transactionService.updateTransaction(id, transactionDto));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(transactionService.getAllTransactionsByUserId(userId));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<TransactionResponse> updateTransactionStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        return ResponseEntity.ok(transactionService.updateTransactionStatus(id, status));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }

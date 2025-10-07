@@ -63,7 +63,7 @@ const NewCustomer = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/customers", {
+      const response = await fetch("http://localhost:8099/api/customers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

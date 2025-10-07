@@ -2,139 +2,145 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, Eye } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "sonner";
+import { UserPlus, Phone, Mail, MapPin } from "lucide-react";
 
 interface Customer {
   id: number;
   name: string;
   phone: string;
   email: string;
-  activePledges: number;
-  totalLoans: number;
+  address: string;
+  idProofType: string;
+  idProofNumber: string;
 }
 
 const Customers = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8080/api/customers", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCustomers(data);
-        }
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-      }
-    };
-
     fetchCustomers();
   }, []);
 
-  const filteredCustomers = customers.filter((customer) =>
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm)
-  );
+  const fetchCustomers = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:8099/api/customers", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setCustomers(data.data);
+        } else {
+          toast.error(data.message || "Failed to fetch customers");
+        }
+      } else {
+        toast.error("Failed to fetch customers");
+      }
+    } catch (error) {
+      toast.error("Error connecting to the server");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="container mx-auto py-6">
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold text-foreground">Customers</h1>
-            <p className="text-muted-foreground mt-2">
-              Manage customer profiles and loan history
-            </p>
+            <p className="text-muted-foreground mt-2">Manage your customer records</p>
           </div>
           <Button onClick={() => navigate("/customers/new")}>
-            <Plus className="mr-2 h-5 w-5" />
-            Add Customer
+            <UserPlus className="mr-2 h-4 w-4" />
+            New Customer
           </Button>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="Search by name or phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {/* Customer List */}
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-border">
-                <tr>
-                  <th className="text-left p-4 text-muted-foreground font-medium">
-                    Name
-                  </th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">
-                    Phone
-                  </th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">
-                    Email
-                  </th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">
-                    Active Pledges
-                  </th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">
-                    Total Loans
-                  </th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCustomers.map((customer) => (
-                  <tr
+        <Card className="p-6">
+          {loading ? (
+            <div className="text-center py-8">Loading customers...</div>
+          ) : customers.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No customers found</p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => navigate("/customers/new")}
+              >
+                Add Your First Customer
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>ID Proof</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customers.map((customer) => (
+                  <TableRow
                     key={customer.id}
-                    className="border-b border-border hover:bg-secondary/50 transition-colors"
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => navigate(`/customers/${customer.id}`)}
                   >
-                    <td className="p-4 font-medium text-foreground">
-                      {customer.name}
-                    </td>
-                    <td className="p-4 text-foreground">{customer.phone}</td>
-                    <td className="p-4 text-muted-foreground">
-                      {customer.email}
-                    </td>
-                    <td className="p-4">
-                      <span className="px-3 py-1 bg-gold/10 text-gold rounded-full text-sm">
-                        {customer.activePledges}
-                      </span>
-                    </td>
-                    <td className="p-4 font-semibold text-foreground">
-                      ₹{customer.totalLoans.toLocaleString()}
-                    </td>
-                    <td className="p-4">
+                    <TableCell className="font-medium">{customer.name}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span className="flex items-center text-sm">
+                          <Phone className="mr-2 h-4 w-4" />
+                          {customer.phone}
+                        </span>
+                        <span className="flex items-center text-sm text-muted-foreground">
+                          <Mail className="mr-2 h-4 w-4" />
+                          {customer.email}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm">{customer.idProofType}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {customer.idProofNumber}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-start">
+                        <MapPin className="mr-2 h-4 w-4 mt-0.5" />
+                        <span className="text-sm">{customer.address}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
                       <Button
                         variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/customers/${customer.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/customers/${customer.id}`);
+                        }}
                       >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
+                        View Details
                       </Button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          )}
         </Card>
       </div>
     </Layout>
