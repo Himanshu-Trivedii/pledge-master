@@ -24,4 +24,15 @@ export default defineConfig(({ mode }) => ({
 			"@": path.resolve(__dirname, "./src"),
 		},
 	},
+	build: {
+		outDir: "dist",
+		sourcemap: mode === "development",
+		rollupOptions: {
+			// Ensure service worker is copied to dist
+			output: {
+				manualChunks: undefined,
+			},
+		},
+	},
+	publicDir: "public",
 }));

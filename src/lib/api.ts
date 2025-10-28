@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { getApiUrl } from './config';
 
 const apiClient = axios.create({
-    baseURL: 'http://localhost:8099/api',
+    baseURL: getApiUrl(),
     headers: {
         'Content-Type': 'application/json',
     },
@@ -51,4 +52,11 @@ export const transactionApi = {
     getByPledge: (pledgeId) => apiClient.get(`/transactions/pledge/${pledgeId}`),
     update: (id, data) => apiClient.put(`/transactions/${id}`, data),
     delete: (id) => apiClient.delete(`/transactions/${id}`),
+};
+
+export const interestApi = {
+    calculateInterest: (amount) => apiClient.get(`/interest/calculate?amount=${amount}`),
+    handlePartialPayment: (originalAmount, paymentAmount) => 
+        apiClient.post('/interest/partial-payment', { originalAmount, paymentAmount }),
+    getInterestRate: (amount) => apiClient.get(`/interest/rate?amount=${amount}`),
 };

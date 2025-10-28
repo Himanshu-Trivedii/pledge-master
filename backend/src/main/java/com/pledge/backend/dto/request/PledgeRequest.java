@@ -29,7 +29,7 @@ public class PledgeRequest {
     private Double amount;
 
     @NotNull(message = "Deadline is required")
-    @Future(message = "Deadline must be in the future")
+    // @Future(message = "Deadline must be in the future") // Temporarily disabled for debugging
     private LocalDateTime deadline;
 
     @NotNull(message = "Pledge duration is required")
@@ -37,15 +37,6 @@ public class PledgeRequest {
     @Max(value = 60, message = "Duration cannot exceed 60 months")
     private Integer pledgeDuration;
 
-    @Size(max = 1000000, message = "Customer photo size too large")
-    private String customerPhoto;
-
-    @NotBlank(message = "Item photo is required")
-    @Size(max = 1000000, message = "Item photo size too large")
-    private String itemPhoto;
-
-    @Size(max = 1000000, message = "Receipt photo size too large")
-    private String receiptPhoto;
 
     // Additional fields for pledge details
     @NotBlank(message = "Item type is required")
@@ -56,12 +47,8 @@ public class PledgeRequest {
     private Double weight;
 
     @NotBlank(message = "Purity is required")
-    @Pattern(regexp = "^(24K|22K|18K|14K)$", message = "Invalid purity value")
+    @Pattern(regexp = "^(28K|24K|22K|18K|14K)$", message = "Invalid purity value")
     private String purity;
-
-	@NotNull(message = "Interest rate is required")
-	@DecimalMin(value = "0.0", message = "Interest rate must be positive")
-	private Double interestRate;
 
 	@NotBlank(message = "Status is required")
 	private String status;

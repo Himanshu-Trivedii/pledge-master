@@ -15,16 +15,18 @@ public class CorsConfig {
 	public CorsFilter corsFilter() {
 		CorsConfiguration config = new CorsConfiguration();
 
-		// 🔓 Allow localhost during development
+		// ✅ Allow local dev + same-network access from any IP
 		config.setAllowedOriginPatterns(List.of(
 				"http://localhost:*",
-				"http://127.0.0.1:*"
+				"http://127.0.0.1:*",
+				"http://192.168.*.*:*",    // Allow 192.168.x.x (most common local IP range)
+				"http://10.*.*.*:*",        // Allow 10.x.x.x
+				"http://172.16.*.*:*",      // Allow 172.16.x.x
+				"http://*.*.*.*:*"          // Allow any IP for mobile testing
 		));
 
-		// ✅ Allow credentials (cookies, auth headers)
 		config.setAllowCredentials(true);
 
-		// ✅ Allow all necessary headers
 		config.setAllowedHeaders(List.of(
 				"Origin",
 				"Content-Type",
@@ -32,7 +34,6 @@ public class CorsConfig {
 				"Authorization"
 		));
 
-		// ✅ Allow all common methods
 		config.setAllowedMethods(List.of(
 				"GET",
 				"POST",
@@ -41,10 +42,8 @@ public class CorsConfig {
 				"OPTIONS"
 		));
 
-		// ✅ Expose headers if needed
 		config.setExposedHeaders(List.of("Authorization"));
 
-		// ✅ Apply CORS config globally
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
 

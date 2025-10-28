@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin123";
+    private static final String ADMIN_USERNAME = "Akash";
+    private static final String ADMIN_PASSWORD = "Akash@123";
     private static final String MOCK_TOKEN = "mock-jwt-token"; // In production, use proper JWT
 
     public AuthResponse authenticate(LoginRequest request) {

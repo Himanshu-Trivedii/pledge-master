@@ -6,6 +6,7 @@ import NewCustomer from "@/pages/NewCustomer";
 import CustomerDetail from "@/pages/CustomerDetail";
 import Pledges from "@/pages/Pledges";
 import NewPledge from "@/pages/NewPledge";
+import NewPledgeSimple from "@/pages/NewPledgeSimple";
 import PledgeDetail from "@/pages/PledgeDetail";
 import NotFound from "@/pages/NotFound";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -51,7 +52,7 @@ function App() {
 
         <Route path="/pledges/new" element={
           <ProtectedRoute>
-            <NewPledge />
+            <NewPledgeSimple />
           </ProtectedRoute>
         } />
 

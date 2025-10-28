@@ -14,4 +14,6 @@ public interface PledgeService {
 	void deletePledge(Long id);
 	Double calculateInterestForPledge(Long id);
 	Double getTotalAmountForPledge(Long id);
+	PledgeResponse recordPayment(Long pledgeId, Double amount);
+	void autoCloseZeroAmountPledges();
 }

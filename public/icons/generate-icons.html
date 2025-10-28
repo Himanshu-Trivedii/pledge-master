@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .upload-box {
+            border: 2px dashed #ccc;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #F5A623;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #d48e1f;
+        }
+        canvas {
+            display: none;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        a {
+            color: #F5A623;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Generator</h1>
+    <p>Upload your logo to generate 192x192 and 512x512 PNG icons</p>
+    
+    <div class="upload-box">
+        <input type="file" id="fileInput" accept="image/*">
+        <p>Choose your logo image (JPG, PNG, etc.)</p>
+    </div>
+    
+    <button onclick="generateIcons()">Generate Icons</button>
+    
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    
+    <div id="result" class="result" style="display: none;">
+        <h3>Icons generated! Click to download:</h3>
+        <p><a id="link192" download="icon-192x192.png">Download icon-192x192.png</a></p>
+        <p><a id="link512" download="icon-512x512.png">Download icon-512x512.png</a></p>
+    </div>
+    
+    <script>
+        let uploadedImage = null;
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedImage = new Image();
+                    uploadedImage.onload = function() {
+                        document.getElementById('result').style.display = 'none';
+                    };
+                    uploadedImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function generateIcons() {
+            if (!uploadedImage) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const canvas192 = document.getElementById('canvas192');
+            const canvas512 = document.getElementById('canvas512');
+            const ctx192 = canvas192.getContext('2d');
+            const ctx512 = canvas512.getContext('2d');
+            
+            // Fill with white background
+            ctx192.fillStyle = '#FFFFFF';
+            ctx192.fillRect(0, 0, 192, 192);
+            ctx512.fillStyle = '#FFFFFF';
+            ctx512.fillRect(0, 0, 512, 512);
+            
+            // Calculate size to fit with padding
+            const padding = 0.1; // 10% padding
+            const maxSize192 = 192 * (1 - padding * 2);
+            const maxSize512 = 512 * (1 - padding * 2);
+            
+            // Draw image centered and scaled
+            function drawScaledImage(ctx, canvas, maxSize) {
+                const scale = Math.min(
+                    maxSize / uploadedImage.width,
+                    maxSize / uploadedImage.height
+                );
+                
+                const width = uploadedImage.width * scale;
+                const height = uploadedImage.height * scale;
+                const x = (canvas.width - width) / 2;
+                const y = (canvas.height - height) / 2;
+                
+                ctx.drawImage(uploadedImage, x, y, width, height);
+            }
+            
+            drawScaledImage(ctx192, canvas192, maxSize192);
+            drawScaledImage(ctx512, canvas512, maxSize512);
+            
+            // Create download links
+            const data192 = canvas192.toDataURL('image/png');
+            const data512 = canvas512.toDataURL('image/png');
+            
+            document.getElementById('link192').href = data192;
+            document.getElementById('link512').href = data512;
+            document.getElementById('result').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
