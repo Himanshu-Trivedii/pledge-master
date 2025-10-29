@@ -44,8 +44,12 @@ const NewPledgeSimple = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        
-        const response = await fetch("http://localhost:8099/api/customers", {
+
+		  const response = await fetch("http://172.22.237.22:8099/api/customers", {
+
+			  // const response = await fetch("http://localhost:8099/api/customers", {
+
+
           headers: { Authorization: `Bearer ${token}` },
         });
         
@@ -119,8 +123,13 @@ const NewPledgeSimple = () => {
         deadline: new Date(Date.now() + formData.pledgeDuration * 30 * 24 * 60 * 60 * 1000).toISOString()
       };
 
-      const response = await fetch("http://localhost:8099/api/pledges", {
-        method: 'POST',
+      // const response = await fetch("http://localhost:8099/api/pledges", {
+
+		const response = await fetch("http://172.22.237.22:8099/api/pledges", {
+
+
+
+			method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

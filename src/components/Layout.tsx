@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -20,6 +20,7 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showInstallModal, setShowInstallModal] = useState(false);
 
@@ -51,6 +52,13 @@ const Layout = ({ children }: LayoutProps) => {
       path: "/pledges",
     },
   ];
+
+  // Close the sidebar on any route change for mobile widths
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-gold/5">

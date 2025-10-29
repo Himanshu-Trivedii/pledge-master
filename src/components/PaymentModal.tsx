@@ -69,8 +69,9 @@ export const PaymentModal = ({
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
-      const response = await fetch(`http://localhost:8099/api/pledges/${pledgeId}/payments`, {
+
+		const response = await fetch("http://172.22.237.22:8099/api/pledges/${pledgeId}/payments", {
+
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
