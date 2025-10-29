@@ -22,9 +22,11 @@ interface Customer {
 const NewPledgeSimple = () => {
   const navigate = useNavigate();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerSearch, setCustomerSearch] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [displayAmount, setDisplayAmount] = useState<string>('');
   
   const [formData, setFormData] = useState({
     customerId: '',
@@ -50,7 +52,7 @@ const NewPledgeSimple = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-		  const response = await fetch("http://192.168.31.166:8099/api/customers", {
+		  const response = await fetch("http://192.168.1.7:8099/api/customers", {
 
 			  // const response = await fetch("http://localhost:8099/api/customers", {
 
@@ -95,7 +97,8 @@ const NewPledgeSimple = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.customerId || !formData.title || !formData.itemType || !formData.weight || !formData.purity || !formData.amount) {
+    // Validate only the fields that are actually required in the simplified form
+    if (!formData.customerId || !formData.itemType || !formData.weight || !formData.purity || !formData.amount) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -104,10 +107,19 @@ const NewPledgeSimple = () => {
       setSubmitting(true);
       const token = localStorage.getItem("token");
       
+      // Format deadline as LocalDateTime string without timezone (Spring expects no 'Z')
+      const deadlineLocal = new Date(Date.now() + formData.pledgeDuration * 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 19); // e.g., 2025-10-29T12:34:56
+
       const pledgeData = {
         customerId: parseInt(formData.customerId),
-        title: formData.title,
-        description: formData.description,
+        // Use itemType as title since Title field was removed
+        title: (formData.itemType && formData.itemType.trim()) ? formData.itemType.trim() : "Pledge",
+        // Backend requires description NotBlank – ensure a sensible fallback
+        description: (formData.description && formData.description.trim())
+          ? formData.description.trim()
+          : `${formData.itemType} - ${parseFloat(formData.weight).toFixed(2)}g ${formData.purity}`,
         itemType: formData.itemType,
         weight: parseFloat(formData.weight),
         purity: formData.purity,
@@ -116,7 +128,7 @@ const NewPledgeSimple = () => {
         notes: formData.notes,
         status: "ACTIVE",
         pledgeDuration: formData.pledgeDuration,
-        deadline: new Date(Date.now() + formData.pledgeDuration * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        deadline: deadlineLocal,
         customerPhoto: customerPhotoUrl || undefined,
         itemPhoto: itemPhotoUrl || undefined,
         receiptPhoto: receiptPhotoUrl || undefined,
@@ -124,7 +136,7 @@ const NewPledgeSimple = () => {
 
       // const response = await fetch("http://localhost:8099/api/pledges", {
 
-		const response = await fetch("http://192.168.31.166:8099/api/pledges", {
+		const response = await fetch("http://192.168.1.7:8099/api/pledges", {
 
 
 
@@ -140,8 +152,13 @@ const NewPledgeSimple = () => {
         toast.success("Pledge created successfully!");
         navigate("/pledges");
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Failed to create pledge");
+        const text = await response.text();
+        try {
+          const errorData = JSON.parse(text);
+          toast.error(errorData.message || "Failed to create pledge");
+        } catch {
+          toast.error(text || "Failed to create pledge");
+        }
       }
     } catch (error) {
       toast.error("Error creating pledge");
@@ -176,15 +193,27 @@ const NewPledgeSimple = () => {
         
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Customer Selection */}
+            {/* Customer Selection with Search */}
             <div className="space-y-2">
               <Label htmlFor="customerId">Select Customer *</Label>
+              <Input
+                placeholder="Search customer by name"
+                className="placeholder:text-foreground placeholder:opacity-90"
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+              />
               <Select value={formData.customerId} onValueChange={(value) => handleInputChange('customerId', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a customer" />
                 </SelectTrigger>
                 <SelectContent>
-                  {customers.map((customer) => (
+                  {(customers || [])
+                    .filter(c => {
+                      const q = customerSearch.trim().toLowerCase();
+                      if (!q) return true;
+                      return c.name.toLowerCase().includes(q) || (c.phone || '').toLowerCase().includes(q);
+                    })
+                    .map((customer) => (
                     <SelectItem key={customer.id} value={customer.id.toString()}>
                       {customer.name} - {customer.phone}
                     </SelectItem>
@@ -193,29 +222,7 @@ const NewPledgeSimple = () => {
               </Select>
             </div>
 
-            {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Pledge Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="Enter pledge title"
-                required
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Enter pledge description"
-                rows={3}
-              />
-            </div>
+            {/* Title and Description removed per request; backend-safe fallback is applied on submit */}
 
             {/* Item Type */}
             <div className="space-y-2">
@@ -251,7 +258,6 @@ const NewPledgeSimple = () => {
                     <SelectValue placeholder="Select purity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="28K">28K</SelectItem>
                     <SelectItem value="24K">24K</SelectItem>
                     <SelectItem value="22K">22K</SelectItem>
                     <SelectItem value="18K">18K</SelectItem>
@@ -267,10 +273,20 @@ const NewPledgeSimple = () => {
                 <Label htmlFor="amount">Loan Amount (₹) *</Label>
                 <Input
                   id="amount"
-                  type="number"
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={(e) => handleInputChange('amount', e.target.value)}
+                  type="text"
+                  inputMode="decimal"
+                  value={displayAmount}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    const sanitized = raw.replace(/[^0-9.]/g, '');
+                    const [intPart, decPart] = sanitized.split('.');
+                    const intNum = intPart ? parseInt(intPart, 10) : NaN;
+                    const formattedInt = Number.isNaN(intNum) ? '' : intNum.toLocaleString('en-IN');
+                    const display = decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
+                    setDisplayAmount(display);
+                    const numeric = parseFloat(sanitized);
+                    setFormData(prev => ({ ...prev, amount: isFinite(numeric) ? numeric.toString() : '' }));
+                  }}
                   placeholder="Enter loan amount"
                   required
                 />

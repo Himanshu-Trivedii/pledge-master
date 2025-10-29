@@ -76,6 +76,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoCapture, label, value 
           <span className="text-sm font-medium">{label}</span>
           {previewUrl && (
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={clearPhoto}
@@ -95,10 +96,10 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoCapture, label, value 
               className="w-full rounded-lg"
             />
             <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-              <Button onClick={capturePhoto} variant="secondary">
+              <Button type="button" onClick={capturePhoto} variant="secondary">
                 Capture
               </Button>
-              <Button onClick={stopCamera} variant="destructive">
+              <Button type="button" onClick={stopCamera} variant="destructive">
                 Cancel
               </Button>
             </div>
@@ -113,11 +114,12 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoCapture, label, value 
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            <Button onClick={startCamera} variant="outline" className="w-full">
+            <Button type="button" onClick={startCamera} variant="outline" className="w-full">
               <Camera className="w-4 h-4 mr-2" />
               Use Camera
             </Button>
             <Button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
               className="w-full"

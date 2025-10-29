@@ -48,6 +48,8 @@ const NewPledge = () => {
 	const [errors, setErrors] = useState<Partial<Record<keyof PledgeFormData, string>>>({});
     const [interestRate, setInterestRate] = useState<number>(getDefaultInterestRate(2));
     const [calculatedInterest, setCalculatedInterest] = useState<{ rate: number; monthlyInterest: number; totalInterest: number; } | null>(null);
+    const [customerSearch, setCustomerSearch] = useState<string>("");
+    const [displayAmount, setDisplayAmount] = useState<string>("");
 
 	// Add new state for deadline and status
 	const [deadline, setDeadline] = useState<string>("");
@@ -96,6 +98,22 @@ const NewPledge = () => {
 		}
 	};
 
+    // Helpers to format Indian number with commas (supports decimals)
+    const formatIndianNumber = (raw: string): string => {
+        if (!raw) return "";
+        const sanitized = raw.replace(/[^0-9.]/g, "");
+        const [intPart, decPart] = sanitized.split(".");
+        const intNum = intPart ? parseInt(intPart, 10) : NaN;
+        const formattedInt = Number.isNaN(intNum) ? "" : intNum.toLocaleString("en-IN");
+        return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
+    };
+
+    const handleAmountChange = (value: string) => {
+        setDisplayAmount(formatIndianNumber(value));
+        const numeric = parseFloat(value.replace(/,/g, ""));
+        setFormData((prev) => ({ ...prev, amount: Number.isFinite(numeric) ? numeric : 0 }));
+    };
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setErrors({});
@@ -130,7 +148,10 @@ const NewPledge = () => {
                 body: JSON.stringify({
 					customerId: result.data.customerId,
 					title: result.data.itemType,
-					description: result.data.notes || "",
+					// Backend requires description NotBlank – ensure a sensible fallback
+					description: (result.data.notes && result.data.notes.trim())
+						? result.data.notes.trim()
+						: `${result.data.itemType} - ${result.data.weight.toFixed(2)}g ${result.data.purity}`,
 					amount: result.data.amount,
                     interestRate: interestRate,
 					deadline: deadline,
@@ -150,8 +171,13 @@ const NewPledge = () => {
 				toast.success("Pledge created successfully!");
 				navigate("/pledges");
 			} else {
-				const errorData = await response.json().catch(() => ({ message: "Failed to create pledge" }));
-				toast.error(errorData.message || "Failed to create pledge");
+				const text = await response.text();
+				try {
+					const errorData = JSON.parse(text);
+					toast.error(errorData.message || "Failed to create pledge");
+				} catch {
+					toast.error(text || "Failed to create pledge");
+				}
 			}
 		} catch (error) {
 			toast.error("Connection error. Please check your backend server.");
@@ -181,19 +207,32 @@ const NewPledge = () => {
 								<h3 className="text-lg font-semibold text-foreground mb-4">Customer Information</h3>
 								<div className="space-y-2">
 									<Label htmlFor="customerId">Select Customer *</Label>
-									<Select
-										value={formData.customerId.toString()}
-										onValueChange={(value) => handleChange("customerId", parseInt(value))}
-									>
+                                    {/* Searchable customer select */}
+                                    <Input
+                                        placeholder="Search customer by name"
+                                        className="placeholder:text-foreground placeholder:opacity-90"
+                                        value={customerSearch}
+                                        onChange={(e) => setCustomerSearch(e.target.value)}
+                                    />
+                                    <Select
+                                        value={formData.customerId.toString()}
+                                        onValueChange={(value) => handleChange("customerId", parseInt(value))}
+                                    >
 										<SelectTrigger className={errors.customerId ? "border-destructive" : ""}>
 											<SelectValue placeholder="Choose a customer" />
 										</SelectTrigger>
 										<SelectContent>
-											{customers.map((customer) => (
-												<SelectItem key={customer.id} value={customer.id.toString()}>
-													{customer.name} - {customer.phone}
-												</SelectItem>
-											))}
+                                            {(customers || [])
+                                                .filter((c) => {
+                                                    const q = customerSearch.trim().toLowerCase();
+                                                    if (!q) return true;
+                                                    return c.name.toLowerCase().includes(q) || (c.phone || "").toLowerCase().includes(q);
+                                                })
+                                                .map((customer) => (
+                                                    <SelectItem key={customer.id} value={customer.id.toString()}>
+                                                        {customer.name} - {customer.phone}
+                                                    </SelectItem>
+                                                ))}
 										</SelectContent>
 									</Select>
 									{errors.customerId && <p className="text-sm text-destructive">{errors.customerId}</p>}
@@ -268,14 +307,15 @@ const NewPledge = () => {
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2">
 										<Label htmlFor="amount">Loan Amount (₹) *</Label>
-										<Input
-											id="amount"
-											type="number"
-											value={formData.amount || ""}
-											onChange={(e) => handleChange("amount", parseFloat(e.target.value))}
-											placeholder="Enter loan amount"
-											className={errors.amount ? "border-destructive" : ""}
-										/>
+                                        <Input
+                                            id="amount"
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={displayAmount}
+                                            onChange={(e) => handleAmountChange(e.target.value)}
+                                            placeholder="Enter loan amount"
+                                            className={errors.amount ? "border-destructive" : ""}
+                                        />
 										{errors.amount && <p className="text-sm text-destructive">{errors.amount}</p>}
 									</div>
 
