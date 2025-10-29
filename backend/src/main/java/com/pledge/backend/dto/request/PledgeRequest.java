@@ -59,4 +59,9 @@ public class PledgeRequest {
     @DecimalMin(value = "0.0", inclusive = false, message = "Interest rate must be greater than 0")
     @DecimalMax(value = "100.0", message = "Interest rate must be realistic (<= 100)")
     private Double interestRate;
+
+    // Cloudinary photo URLs (optional)
+    private String customerPhoto;
+    private String itemPhoto;
+    private String receiptPhoto;
 }

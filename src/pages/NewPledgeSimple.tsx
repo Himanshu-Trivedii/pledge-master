@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { formatIndianCurrency } from '@/lib/utils';
+import { formatIndianCurrency, uploadToCloudinary } from '@/lib/utils';
 import { getDefaultInterestRate, setDefaultInterestRate } from '@/lib/config';
+import PhotoUpload from '@/components/PhotoUpload.tsx';
 
 interface Customer {
   id: number;
@@ -38,6 +39,9 @@ const NewPledgeSimple = () => {
   });
 
   const [interestRate, setInterestRate] = useState<number>(getDefaultInterestRate(2));
+  const [customerPhotoUrl, setCustomerPhotoUrl] = useState<string>('');
+  const [itemPhotoUrl, setItemPhotoUrl] = useState<string>('');
+  const [receiptPhotoUrl, setReceiptPhotoUrl] = useState<string>('');
   const [monthlyInterest, setMonthlyInterest] = useState<number>(0);
 
   useEffect(() => {
@@ -112,7 +116,10 @@ const NewPledgeSimple = () => {
         notes: formData.notes,
         status: "ACTIVE",
         pledgeDuration: formData.pledgeDuration,
-        deadline: new Date(Date.now() + formData.pledgeDuration * 30 * 24 * 60 * 60 * 1000).toISOString()
+        deadline: new Date(Date.now() + formData.pledgeDuration * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        customerPhoto: customerPhotoUrl || undefined,
+        itemPhoto: itemPhotoUrl || undefined,
+        receiptPhoto: receiptPhotoUrl || undefined,
       };
 
       // const response = await fetch("http://localhost:8099/api/pledges", {
@@ -312,6 +319,22 @@ const NewPledgeSimple = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Photos */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <PhotoUpload label="Customer Photo" onPhotoCapture={async (data) => {
+                try { const url = await uploadToCloudinary(data, `pledges/${formData.customerId || 'unknown'}`); setCustomerPhotoUrl(url);} catch {
+
+
+					/* empty */ }
+              }} value={customerPhotoUrl} />
+              <PhotoUpload label="Jewellery Item Photo" onPhotoCapture={async (data) => {
+                try { const url = await uploadToCloudinary(data, `pledges/${formData.customerId || 'unknown'}`); setItemPhotoUrl(url);} catch { /* empty */ }
+              }} value={itemPhotoUrl} />
+              <PhotoUpload label="Receipt Photo" onPhotoCapture={async (data) => {
+                try { const url = await uploadToCloudinary(data, `pledges/${formData.customerId || 'unknown'}`); setReceiptPhotoUrl(url);} catch { /* empty */ }
+              }} value={receiptPhotoUrl} />
             </div>
 
             {/* Notes */}

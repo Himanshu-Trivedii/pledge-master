@@ -30,4 +30,9 @@ public class PledgeResponse {
 	private Integer pledgeDuration;
     // Computed fields
     private Double remainingAmount;
+
+    // Cloudinary photo URLs
+    private String customerPhoto;
+    private String itemPhoto;
+    private String receiptPhoto;
 }

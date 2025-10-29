@@ -73,6 +73,9 @@ const PledgeDetail = () => {
             itemType: data.itemType ?? data.title ?? "Pledge Item",
             pledgeDate: data.createdAt ?? new Date().toISOString(),
             status: (data.status || "").toString(),
+            customerPhoto: data.customerPhoto,
+            itemPhoto: data.itemPhoto,
+            receiptPhoto: data.receiptPhoto,
           };
           setPledge(normalized);
         } else {
@@ -283,6 +286,24 @@ const PledgeDetail = () => {
             </div>
           </Card>
         </div>
+
+        {/* Photos */}
+        {(pledge.customerPhoto || pledge.itemPhoto || pledge.receiptPhoto) && (
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4 text-foreground">Photos</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {pledge.customerPhoto && (
+                <img src={pledge.customerPhoto} alt="Customer" className="w-full h-48 object-cover rounded" />
+              )}
+              {pledge.itemPhoto && (
+                <img src={pledge.itemPhoto} alt="Item" className="w-full h-48 object-cover rounded" />
+              )}
+              {pledge.receiptPhoto && (
+                <img src={pledge.receiptPhoto} alt="Receipt" className="w-full h-48 object-cover rounded" />
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* Payment History */}
         <Card className="p-6">

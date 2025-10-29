@@ -70,6 +70,16 @@ public class PledgeEntity {
 	@Column(name = "notes")
 	private String notes;
 
+    // Photos stored on Cloudinary - save URLs only
+    @Column(name = "customer_photo")
+    private String customerPhoto;
+
+    @Column(name = "item_photo")
+    private String itemPhoto;
+
+    @Column(name = "receipt_photo")
+    private String receiptPhoto;
+
 
 	// 17️⃣ user_id
 	@Column(name = "user_id")

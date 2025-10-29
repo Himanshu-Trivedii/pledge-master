@@ -60,6 +60,9 @@ public class PledgeServiceImpl implements PledgeService {
 									  .weight(request.getWeight())
 									  .purity(request.getPurity())
 									  .notes(request.getNotes())
+								  .customerPhoto(request.getCustomerPhoto())
+								  .itemPhoto(request.getItemPhoto())
+								  .receiptPhoto(request.getReceiptPhoto())
 										  .build();
 
 		PledgeEntity saved = pledgeRepository.save(pledge);
@@ -207,6 +210,9 @@ public class PledgeServiceImpl implements PledgeService {
 		response.setWeight(entity.getWeight());
 		response.setPurity(entity.getPurity());
 		response.setNotes(entity.getNotes());
+		response.setCustomerPhoto(entity.getCustomerPhoto());
+		response.setItemPhoto(entity.getItemPhoto());
+		response.setReceiptPhoto(entity.getReceiptPhoto());
 
 		// Compute remaining amount = principal + accrued interest - total paid
 		try {

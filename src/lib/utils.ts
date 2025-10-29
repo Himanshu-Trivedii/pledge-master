@@ -36,3 +36,20 @@ export function formatIndianCurrency(
 
   return options?.showCurrency ? `₹${formatted}` : formatted;
 }
+
+export async function uploadToCloudinary(fileOrDataUrl: File | string, folder?: string): Promise<string> {
+  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } = await import('./config');
+  const form = new FormData();
+  form.append('upload_preset', (CLOUDINARY_UPLOAD_PRESET as any) || 'jewellery');
+  if (folder) form.append('folder', folder);
+  form.append('file', fileOrDataUrl as any);
+
+  const endpoint = `https://api.cloudinary.com/v1_1/${(CLOUDINARY_CLOUD_NAME as any) || 'djka67lh3'}/upload`;
+  const res = await fetch(endpoint, { method: 'POST', body: form });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Cloudinary upload failed: ${res.status} ${text}`);
+  }
+  const data = await res.json();
+  return data.secure_url || data.url;
+}

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import PhotoUpload from "@/components/PhotoUpload";
+import { uploadToCloudinary } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft, Calculator } from "lucide-react";
@@ -50,6 +52,9 @@ const NewPledge = () => {
 	// Add new state for deadline and status
 	const [deadline, setDeadline] = useState<string>("");
 	const [status, setStatus] = useState<string>("ACTIVE");
+    const [customerPhotoUrl, setCustomerPhotoUrl] = useState<string>("");
+    const [itemPhotoUrl, setItemPhotoUrl] = useState<string>("");
+    const [receiptPhotoUrl, setReceiptPhotoUrl] = useState<string>("");
 
 	useEffect(() => {
 		const fetchCustomers = async () => {
@@ -134,7 +139,10 @@ const NewPledge = () => {
 					weight: result.data.weight,
 					purity: result.data.purity,
 					status: status,
-					notes: result.data.notes || "",
+                    notes: result.data.notes || "",
+                    customerPhoto: customerPhotoUrl || undefined,
+                    itemPhoto: itemPhotoUrl || undefined,
+                    receiptPhoto: receiptPhotoUrl || undefined,
 				}),
 			});
 
@@ -192,7 +200,7 @@ const NewPledge = () => {
 								</div>
 							</div>
 
-							{/* Item Details */}
+                            {/* Item Details */}
 							<div>
 								<h3 className="text-lg font-semibold text-foreground mb-4">Item Details</h3>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -240,6 +248,17 @@ const NewPledge = () => {
 										</Select>
 										{errors.purity && <p className="text-sm text-destructive">{errors.purity}</p>}
 									</div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                    <PhotoUpload label="Customer Photo" onPhotoCapture={async (data) => {
+                                        try { const url = await uploadToCloudinary(data, `pledges/${formData.customerId || 'unknown'}`); setCustomerPhotoUrl(url);} catch {}
+                                    }} value={customerPhotoUrl} />
+                                    <PhotoUpload label="Jewellery Item Photo" onPhotoCapture={async (data) => {
+                                        try { const url = await uploadToCloudinary(data, `pledges/${formData.customerId || 'unknown'}`); setItemPhotoUrl(url);} catch {}
+                                    }} value={itemPhotoUrl} />
+                                    <PhotoUpload label="Receipt Photo" onPhotoCapture={async (data) => {
+                                        try { const url = await uploadToCloudinary(data, `pledges/${formData.customerId || 'unknown'}`); setReceiptPhotoUrl(url);} catch {}
+                                    }} value={receiptPhotoUrl} />
+                                </div>
 								</div>
 							</div>
 

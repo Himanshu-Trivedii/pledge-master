@@ -35,3 +35,7 @@ export function getDefaultInterestRate(fallback = 2): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+// Cloudinary configuration (unsigned upload)
+export const CLOUDINARY_CLOUD_NAME = 'djka67lh3';
+export const CLOUDINARY_UPLOAD_PRESET = 'jewellery';
+
