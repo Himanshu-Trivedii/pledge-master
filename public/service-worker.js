@@ -1,6 +1,6 @@
 // Service Worker for Gode Jewellers PWA
-const CACHE_NAME = 'gode-jewellers-v1';
-const STATIC_CACHE = 'gode-jewellers-static-v1';
+const CACHE_NAME = 'gode-jewellers-v2';
+const STATIC_CACHE = 'gode-jewellers-static-v2';
 
 // Files to cache immediately
 const STATIC_ASSETS = [

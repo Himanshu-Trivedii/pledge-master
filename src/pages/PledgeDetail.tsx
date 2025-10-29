@@ -117,15 +117,15 @@ const PledgeDetail = () => {
   const calculateTotals = () => {
     if (!pledge) return { monthlyInterest: 0, totalInterest: 0, totalPayable: 0, amountPaid: 0, balance: 0 };
 
-    const principal = pledge.remainingAmount ?? pledge.amount ?? 0;
-    // Interest rate is already monthly (3%, 2.5%, or 2%), not annual
+    // Monthly interest should be computed on original principal, not remainingAmount (which includes interest)
+    const principal = pledge.amount ?? 0;
     const monthlyInterest = (principal * (pledge.interestRate ?? 0)) / 100;
     const totalInterest = monthlyInterest * (pledge.pledgeDuration ?? 0);
     const totalPayable = (pledge.amount ?? 0) + totalInterest; // original principal + interest
     
     // Calculate total amount paid from payment history
     const amountPaid = payments.reduce((total, payment) => total + payment.amount, 0);
-    const balance = pledge.remainingAmount ?? 0;
+    const balance = pledge.remainingAmount ?? (pledge.amount ?? 0);
 
     return { monthlyInterest, totalInterest, totalPayable, amountPaid, balance };
   };
@@ -344,7 +344,8 @@ const PledgeDetail = () => {
           open={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           pledgeId={pledge.id}
-          currentAmount={pledge.amount || pledge.loanAmount || 0}
+          currentAmount={pledge.remainingAmount ?? pledge.amount ?? pledge.loanAmount ?? 0}
+          interestRate={pledge.interestRate ?? 0}
             onPaymentSuccess={() => {
               // Refresh pledge data and payment history
               const fetchPledgeData = async () => {
@@ -352,7 +353,10 @@ const PledgeDetail = () => {
                   const token = localStorage.getItem("token");
                   
                   // Refresh pledge data
-                  const pledgeResponse = await fetch(`http://localhost:8099/api/pledges/${id}`, {
+                  const apiUrl = localStorage.getItem('apiUrl') || (window.location.hostname !== 'localhost' 
+                    ? `http://${window.location.hostname}:8099/api` 
+                    : 'http://localhost:8099/api');
+                  const pledgeResponse = await fetch(`${apiUrl}/pledges/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                   });
 
@@ -370,7 +374,7 @@ const PledgeDetail = () => {
                   }
 
                   // Refresh payment history
-                  const paymentsResponse = await fetch(`http://localhost:8099/api/payments/pledge/${id}`, {
+                  const paymentsResponse = await fetch(`${apiUrl}/payments/pledge/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                   });
 

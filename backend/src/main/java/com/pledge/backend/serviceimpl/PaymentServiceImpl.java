@@ -38,7 +38,33 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalArgumentException("Cannot make payment on a closed pledge");
         }
 
-        // Create payment record
+        // 1) Compute accrued interest since last cycle on current principal
+        double principal = pledge.getAmount() == null ? 0.0 : pledge.getAmount();
+        double monthlyRatePercent = pledge.getInterestRate() == null ? 0.0 : pledge.getInterestRate();
+
+        // Determine accrual start date: last payment date (if any), else createdAt
+        LocalDateTime accrualStart = pledge.getCreatedAt();
+        List<PaymentEntity> paymentsSoFar = paymentRepository.findByPledgeIdOrderByPaymentDateDesc(pledge.getId());
+        if (paymentsSoFar != null && !paymentsSoFar.isEmpty()) {
+            accrualStart = paymentsSoFar.get(0).getPaymentDate();
+        }
+        long daysElapsed = ChronoUnit.DAYS.between(accrualStart, LocalDateTime.now());
+
+        double monthlyInterest = principal * (monthlyRatePercent / 100.0);
+        double dailyInterestRate = (monthlyRatePercent / 100.0) / 30.0;
+        double accruedInterest = daysElapsed <= 30 ? monthlyInterest : (monthlyInterest + principal * dailyInterestRate * (daysElapsed - 30L));
+
+        // 2) Add interest to principal for this cycle
+        double totalBeforePayment = principal + accruedInterest;
+
+        // 3) Apply payment against total
+        double remainingAfterPayment = Math.max(0.0, totalBeforePayment - request.getAmount());
+
+        // 4) Update pledge principal to remaining (this becomes the new base for next cycle)
+        pledge.setAmount(remainingAfterPayment);
+        pledgeRepository.save(pledge);
+
+        // 5) Now create payment record (dated now)
         PaymentEntity payment = PaymentEntity.builder()
                 .pledge(pledge)
                 .amount(request.getAmount())
@@ -48,7 +74,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         PaymentEntity saved = paymentRepository.save(payment);
 
-        // Calculate total amount due (principal + daily interest)
+        // 6) Calculate total amount due after payment (principal since payment + next accrual will start post-payment)
         Double totalAmountDue = calculateTotalAmountDue(pledge);
         Double totalPaid = getTotalPaymentsByPledgeId(pledge.getId());
         Double remainingAmount = totalAmountDue - totalPaid;
@@ -92,16 +118,30 @@ public class PaymentServiceImpl implements PaymentService {
             return pledge.getAmount();
         }
 
-        // Calculate days elapsed since pledge creation
-        long daysElapsed = ChronoUnit.DAYS.between(pledge.getCreatedAt(), LocalDateTime.now());
-        
-        // Calculate daily interest rate
+        // Determine accrual start date: last payment date (if any), else createdAt
+        LocalDateTime accrualStart = pledge.getCreatedAt();
+        List<PaymentEntity> payments = paymentRepository.findByPledgeIdOrderByPaymentDateDesc(pledge.getId());
+        if (payments != null && !payments.isEmpty()) {
+            accrualStart = payments.get(0).getPaymentDate();
+        }
+
+        long daysElapsed = ChronoUnit.DAYS.between(accrualStart, LocalDateTime.now());
+
         // Treat stored interestRate as monthly percent (e.g., 2% per month)
-        // Convert monthly percent to daily (approximate by 30 days per month)
-        double dailyInterestRate = (pledge.getInterestRate() / 100.0) / 30.0;
-        
-        // Calculate total interest accrued
-        double totalInterest = pledge.getAmount() * dailyInterestRate * daysElapsed;
+        double monthlyRatePercent = pledge.getInterestRate();
+        double monthlyInterest = pledge.getAmount() * (monthlyRatePercent / 100.0);
+        double dailyInterestRate = (monthlyRatePercent / 100.0) / 30.0; // 30-day month basis
+
+        // Business rule relative to accrualStart:
+        // - First 30 days: full month interest
+        // - After that: daily pro-rata on extra days
+        double totalInterest;
+        if (daysElapsed <= 30) {
+            totalInterest = monthlyInterest;
+        } else {
+            long extraDays = daysElapsed - 30L;
+            totalInterest = monthlyInterest + (pledge.getAmount() * dailyInterestRate * extraDays);
+        }
         
         // Return principal + interest
         return pledge.getAmount() + totalInterest;

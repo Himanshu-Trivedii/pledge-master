@@ -28,4 +28,6 @@ public class PledgeResponse {
 	private String notes;
 	// <-- added field to match backend entity and avoid "setPledgeDuration" missing error
 	private Integer pledgeDuration;
+    // Computed fields
+    private Double remainingAmount;
 }

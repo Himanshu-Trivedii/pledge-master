@@ -85,13 +85,24 @@ public class PledgeEntity {
         return (amount * (interestRate / 100.0) / 30.0);
     }
 
-	public Double calculateTotalInterestToDate() {
-		if (createdAt == null) {
-			throw new IllegalStateException("Created date is not set");
-		}
-		long daysElapsed = ChronoUnit.DAYS.between(createdAt, LocalDateTime.now());
-		return calculateDailyInterest() * daysElapsed;
-	}
+    public Double calculateTotalInterestToDate() {
+        if (createdAt == null) {
+            throw new IllegalStateException("Created date is not set");
+        }
+        long daysElapsed = ChronoUnit.DAYS.between(createdAt, LocalDateTime.now());
+
+        // Monthly interest percent (e.g., 2% of principal per month)
+        double monthlyRatePercent = interestRate;
+        double monthlyInterest = amount * (monthlyRatePercent / 100.0);
+        double dailyInterestRate = (monthlyRatePercent / 100.0) / 30.0; // 30-day basis
+
+        if (daysElapsed <= 30) {
+            return monthlyInterest;
+        }
+
+        long extraDays = daysElapsed - 30L;
+        return monthlyInterest + (amount * dailyInterestRate * extraDays);
+    }
 
 	public Double calculateTotalAmount() {
 		return amount + calculateTotalInterestToDate();

@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { interestApi } from "@/lib/api";
+import { interestApi, } from "@/lib/api";
 import { formatIndianCurrency } from "@/lib/utils";
 
 interface PaymentModalProps {
@@ -19,6 +19,7 @@ interface PaymentModalProps {
   onClose: () => void;
   pledgeId: number;
   currentAmount: number;
+  interestRate: number;
   onPaymentSuccess: () => void;
 }
 
@@ -28,13 +29,13 @@ export const PaymentModal = ({
   pledgeId,
   currentAmount,
   onPaymentSuccess,
+  interestRate,
 }: PaymentModalProps) => {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<{
     remainingAmount: number;
     newInterestRate: number;
-    newMonthlyInterest: number;
   } | null>(null);
 
   const handleAmountChange = async (value: string) => {
@@ -42,12 +43,8 @@ export const PaymentModal = ({
     
     const amount = parseFloat(value);
     if (amount > 0 && amount <= currentAmount) {
-      try {
-        const response = await interestApi.handlePartialPayment(currentAmount, amount);
-        setPreview(response.data.data);
-      } catch (error) {
-        // Silently fail - preview is optional
-      }
+      const remainingAmount = Math.max(0, currentAmount - amount);
+      setPreview({ remainingAmount, newInterestRate: interestRate });
     } else {
       setPreview(null);
     }
@@ -69,15 +66,23 @@ export const PaymentModal = ({
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+      const apiUrl = localStorage.getItem('apiUrl') || 
+        (window.location.hostname !== 'localhost' ? `http://${window.location.hostname}:8099/api` : 'http://localhost:8099/api');
 
-		const response = await fetch("http://172.22.237.22:8099/api/pledges/${pledgeId}/payments", {
+      const payload = {
+        pledgeId,
+        amount,
+        paymentType: amount >= currentAmount ? 'FULL' : 'PARTIAL',
+        notes: ''
+      };
 
+      const response = await fetch(`${apiUrl}/payments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -144,12 +149,6 @@ export const PaymentModal = ({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">New Interest Rate:</span>
                   <span className="font-semibold text-gold">{preview.newInterestRate}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">New Monthly Interest:</span>
-                  <span className="font-semibold">
-                    {formatIndianCurrency(preview.newMonthlyInterest, { showCurrency: true, minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
                 </div>
               </div>
             </div>

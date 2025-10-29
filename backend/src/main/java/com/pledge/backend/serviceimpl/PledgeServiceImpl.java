@@ -160,12 +160,8 @@ public class PledgeServiceImpl implements PledgeService {
 				.build();
 		paymentRepository.save(payment);
 
-		// Recalculate interest rate based on new amount
-		Double newInterestRate = interestCalculationService.getInterestRate(newAmount);
-		
-		// Update pledge with new amount and interest rate
+		// Do NOT change interest rate after partial payment; keep original owner-defined rate
 		pledge.setAmount(newAmount);
-		pledge.setInterestRate(newInterestRate);
 
 		// Auto-close if amount becomes 0 or negative
 		if (newAmount <= 0) {
@@ -211,6 +207,25 @@ public class PledgeServiceImpl implements PledgeService {
 		response.setWeight(entity.getWeight());
 		response.setPurity(entity.getPurity());
 		response.setNotes(entity.getNotes());
+
+		// Compute remaining amount = principal + accrued interest - total paid
+		try {
+			// Accrual from last payment date (if any) or createdAt
+			java.time.LocalDateTime accrualStart = entity.getCreatedAt();
+			java.util.List<com.pledge.backend.entity.PaymentEntity> payments = paymentRepository.findByPledgeIdOrderByPaymentDateDesc(entity.getId());
+			if (payments != null && !payments.isEmpty()) {
+				accrualStart = payments.get(0).getPaymentDate();
+			}
+			long daysElapsed = java.time.temporal.ChronoUnit.DAYS.between(accrualStart, java.time.LocalDateTime.now());
+			double principal = entity.getAmount() == null ? 0.0 : entity.getAmount();
+			double monthlyRatePercent = entity.getInterestRate() == null ? 0.0 : entity.getInterestRate();
+			double monthlyInterest = principal * (monthlyRatePercent / 100.0);
+			double dailyInterestRate = (monthlyRatePercent / 100.0) / 30.0;
+			double accruedInterest = daysElapsed <= 30 ? monthlyInterest : (monthlyInterest + principal * dailyInterestRate * (daysElapsed - 30L));
+			double remaining = principal + accruedInterest; // principal already reflects payments
+			response.setRemainingAmount(remaining);
+		} catch (Exception ignored) { }
+
 		return response;
 	}
 
