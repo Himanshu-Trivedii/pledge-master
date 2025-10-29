@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatIndianCurrency } from '@/lib/utils';
+import { getDefaultInterestRate, setDefaultInterestRate } from '@/lib/config';
 
 interface Customer {
   id: number;
@@ -36,7 +37,7 @@ const NewPledgeSimple = () => {
     pledgeDuration: 12
   });
 
-  const [calculatedInterestRate, setCalculatedInterestRate] = useState<number>(0);
+  const [interestRate, setInterestRate] = useState<number>(getDefaultInterestRate(2));
   const [monthlyInterest, setMonthlyInterest] = useState<number>(0);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ const NewPledgeSimple = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-		  const response = await fetch("http://172.22.237.22:8099/api/customers", {
+		  const response = await fetch("http://192.168.31.166:8099/api/customers", {
 
 			  // const response = await fetch("http://localhost:8099/api/customers", {
 
@@ -69,26 +70,16 @@ const NewPledgeSimple = () => {
     fetchCustomers();
   }, []);
 
-  // Calculate interest rate and monthly interest based on amount
+  // Calculate monthly interest based on owner-provided monthly rate
   useEffect(() => {
     const amount = parseFloat(formData.amount);
-    if (amount > 0) {
-      let rate = 0;
-      if (amount <= 50000) {
-        rate = 3.0;
-      } else if (amount <= 100000) {
-        rate = 2.5;
-      } else {
-        rate = 2.0;
-      }
-      setCalculatedInterestRate(rate);
-      // Calculate monthly interest
+    const rate = Number.isFinite(interestRate) ? interestRate : 0;
+    if (amount > 0 && rate > 0) {
       setMonthlyInterest((amount * rate) / 100);
     } else {
-      setCalculatedInterestRate(0);
       setMonthlyInterest(0);
     }
-  }, [formData.amount]);
+  }, [formData.amount, interestRate]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -117,6 +108,7 @@ const NewPledgeSimple = () => {
         weight: parseFloat(formData.weight),
         purity: formData.purity,
         amount: parseFloat(formData.amount),
+        interestRate: interestRate,
         notes: formData.notes,
         status: "ACTIVE",
         pledgeDuration: formData.pledgeDuration,
@@ -125,7 +117,7 @@ const NewPledgeSimple = () => {
 
       // const response = await fetch("http://localhost:8099/api/pledges", {
 
-		const response = await fetch("http://172.22.237.22:8099/api/pledges", {
+		const response = await fetch("http://192.168.31.166:8099/api/pledges", {
 
 
 
@@ -278,27 +270,29 @@ const NewPledgeSimple = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Interest Details</Label>
+                <Label htmlFor="interestRate">Interest Rate (%) *</Label>
+                <Input
+                  id="interestRate"
+                  type="number"
+                  step="0.1"
+                  value={interestRate}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setInterestRate(Number.isFinite(v) ? v : 0);
+                    if (Number.isFinite(v) && v > 0) {
+                      setDefaultInterestRate(v);
+                    }
+                  }}
+                  placeholder="Enter interest rate (e.g., 2.0)"
+                  required
+                />
                 <div className="p-3 bg-muted rounded-md">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Rate:</span>
-                    <span className="text-lg font-semibold text-gold">
-                      {calculatedInterestRate}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-border pt-2">
-                    <span className="text-sm text-muted-foreground">Monthly Interest:</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Estimated Monthly Interest:</span>
                     <span className="text-lg font-semibold text-foreground">
                       {formatIndianCurrency(monthlyInterest, { showCurrency: true, minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
-                    {formData.amount && (
-                      calculatedInterestRate === 3.0 ? "Slab: ₹0 - ₹50,000" :
-                      calculatedInterestRate === 2.5 ? "Slab: ₹50,001 - ₹1,00,000" :
-                      "Slab: Above ₹1,00,000"
-                    )}
-                  </p>
                 </div>
               </div>
             </div>

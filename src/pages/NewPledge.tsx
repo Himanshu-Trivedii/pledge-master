@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft, Calculator } from "lucide-react";
+import { getDefaultInterestRate, setDefaultInterestRate } from "@/lib/config";
 import { z } from "zod";
 
 const pledgeSchema = z.object({
@@ -43,7 +44,8 @@ const NewPledge = () => {
 		notes: "",
 	});
 	const [errors, setErrors] = useState<Partial<Record<keyof PledgeFormData, string>>>({});
-	const [calculatedInterest, setCalculatedInterest] = useState<{ rate: number; monthlyInterest: number; totalInterest: number; } | null>(null);
+    const [interestRate, setInterestRate] = useState<number>(getDefaultInterestRate(2));
+    const [calculatedInterest, setCalculatedInterest] = useState<{ rate: number; monthlyInterest: number; totalInterest: number; } | null>(null);
 
 	// Add new state for deadline and status
 	const [deadline, setDeadline] = useState<string>("");
@@ -68,31 +70,19 @@ const NewPledge = () => {
 		fetchCustomers();
 	}, []);
 
-	// remove calculateInterest useCallback and use a direct effect to compute the interest when inputs change
-
-	useEffect(() => {
-		if ((formData.amount ?? 0) > 0 && formData.pledgeDuration > 0) {
-			const amount = formData.amount;
-			let rate: number;
-
-			if (amount <= 50000) {
-				rate = 2;
-			} else if (amount <= 100000) {
-				rate = 2.5;
-			} else {
-				rate = 3;
-			}
-
-			const monthlyInterest = (amount * rate) / 100 / 12;
-			const totalInterest = monthlyInterest * formData.pledgeDuration;
-
-			setCalculatedInterest({
-				rate,
-				monthlyInterest,
-				totalInterest,
-			});
-		}
-	}, [formData.amount, formData.pledgeDuration]);
+    // Compute interest based on user-provided rate
+    useEffect(() => {
+        if ((formData.amount ?? 0) > 0 && formData.pledgeDuration > 0 && (interestRate ?? 0) > 0) {
+            const amount = formData.amount;
+            const rate = interestRate;
+            // Treat interestRate as monthly percent (e.g., 2% per month)
+            const monthlyInterest = (amount * rate) / 100;
+            const totalInterest = monthlyInterest * formData.pledgeDuration;
+            setCalculatedInterest({ rate, monthlyInterest, totalInterest });
+        } else {
+            setCalculatedInterest(null);
+        }
+    }, [formData.amount, formData.pledgeDuration, interestRate]);
 
 	const handleChange = (field: keyof PledgeFormData, value: string | number) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
@@ -132,12 +122,12 @@ const NewPledge = () => {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${token}`,
 				},
-				body: JSON.stringify({
+                body: JSON.stringify({
 					customerId: result.data.customerId,
 					title: result.data.itemType,
 					description: result.data.notes || "",
 					amount: result.data.amount,
-					interestRate: calculatedInterest?.rate,
+                    interestRate: interestRate,
 					deadline: deadline,
 					pledgeDuration: result.data.pledgeDuration,
 					itemType: result.data.itemType,
@@ -253,7 +243,7 @@ const NewPledge = () => {
 								</div>
 							</div>
 
-							{/* Loan Details */}
+                            {/* Loan Details */}
 							<div>
 								<h3 className="text-lg font-semibold text-foreground mb-4">Loan Details</h3>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -270,7 +260,25 @@ const NewPledge = () => {
 										{errors.amount && <p className="text-sm text-destructive">{errors.amount}</p>}
 									</div>
 
-									<div className="space-y-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="interestRate">Interest Rate (%) *</Label>
+                                        <Input
+                                            id="interestRate"
+                                            type="number"
+                                            step="0.1"
+                                            value={interestRate}
+                                            onChange={(e) => {
+                                                const v = parseFloat(e.target.value);
+                                                setInterestRate(Number.isFinite(v) ? v : 0);
+                                                if (Number.isFinite(v) && v > 0) {
+                                                    setDefaultInterestRate(v);
+                                                }
+                                            }}
+                                            placeholder="Enter interest rate (e.g., 2.0)"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
 										<Label htmlFor="pledgeDuration">Duration (months) *</Label>
 										<Input
 											id="pledgeDuration"
@@ -345,7 +353,7 @@ const NewPledge = () => {
 							<h3 className="text-lg font-semibold text-foreground">Interest Calculator</h3>
 						</div>
 
-						{calculatedInterest ? (
+                        {calculatedInterest ? (
 							<div className="space-y-4">
 								<div className="p-4 bg-gold/10 rounded-lg border border-gold/20">
 									<p className="text-sm text-muted-foreground">Interest Rate</p>

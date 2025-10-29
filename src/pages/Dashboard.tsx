@@ -235,7 +235,7 @@ const Dashboard = () => {
         </div>
 
         {/* Profit/Loss and Metal Rates */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="p-6 bg-gradient-to-br from-success/5 via-success/5 to-card hover:shadow-2xl transition-all duration-300">
             <div className="flex items-center gap-2 mb-4">
               {stats.profitLoss >= 0 ? (
@@ -282,24 +282,7 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-silver/10 via-silver/5 to-card hover:shadow-2xl transition-all duration-300 border-silver/20">
-            <div className="flex items-center gap-2 mb-4">
-              <DollarSign className="h-5 w-5 text-silver animate-pulse" />
-              <h3 className="text-lg font-semibold text-foreground">Live Silver Rate</h3>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-muted-foreground">Silver (per kg)</p>
-                <p className="text-lg font-bold text-silver">₹{metalRates.silver.price.toLocaleString()}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="text-xs text-muted-foreground">Change</p>
-                <p className={`text-sm font-semibold ${metalRates.silver.change >= 0 ? 'text-success' : 'text-destructive'} transition-colors duration-300`}>
-                  {metalRates.silver.change >= 0 ? '+' : ''}₹{Math.abs(metalRates.silver.change).toLocaleString()} ({metalRates.silver.changePercentage >= 0 ? '+' : ''}{metalRates.silver.changePercentage.toFixed(2)}%)
-                </p>
-              </div>
-            </div>
-          </Card>
+          {/* Removed slab-based Interest Rate Tiers to avoid slab implication */}
         </div>
 
         {/* Recent Activity */}

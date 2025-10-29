@@ -96,7 +96,9 @@ public class PaymentServiceImpl implements PaymentService {
         long daysElapsed = ChronoUnit.DAYS.between(pledge.getCreatedAt(), LocalDateTime.now());
         
         // Calculate daily interest rate
-        double dailyInterestRate = pledge.getInterestRate() / (100 * 365);
+        // Treat stored interestRate as monthly percent (e.g., 2% per month)
+        // Convert monthly percent to daily (approximate by 30 days per month)
+        double dailyInterestRate = (pledge.getInterestRate() / 100.0) / 30.0;
         
         // Calculate total interest accrued
         double totalInterest = pledge.getAmount() * dailyInterestRate * daysElapsed;

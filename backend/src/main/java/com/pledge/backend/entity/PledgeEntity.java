@@ -77,12 +77,13 @@ public class PledgeEntity {
 
 	// ================= Business Logic =================
 
-	public Double calculateDailyInterest() {
-		if (amount == null || interestRate == null) {
-			throw new IllegalStateException("Amount or interest rate is not set");
-		}
-		return (amount * interestRate) / (100 * 365);
-	}
+    public Double calculateDailyInterest() {
+        if (amount == null || interestRate == null) {
+            throw new IllegalStateException("Amount or interest rate is not set");
+        }
+        // Treat interestRate as monthly percent; convert to daily using 30-day month
+        return (amount * (interestRate / 100.0) / 30.0);
+    }
 
 	public Double calculateTotalInterestToDate() {
 		if (createdAt == null) {

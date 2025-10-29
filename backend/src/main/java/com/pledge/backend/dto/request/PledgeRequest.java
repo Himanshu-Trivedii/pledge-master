@@ -54,4 +54,9 @@ public class PledgeRequest {
 	private String status;
 
 	private String notes;
+
+    // Optional: Owner-provided annual interest rate percentage (e.g., 2.0)
+    @DecimalMin(value = "0.0", inclusive = false, message = "Interest rate must be greater than 0")
+    @DecimalMax(value = "100.0", message = "Interest rate must be realistic (<= 100)")
+    private Double interestRate;
 }

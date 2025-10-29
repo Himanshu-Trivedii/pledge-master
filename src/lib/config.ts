@@ -20,3 +20,18 @@ export const getApiUrl = () => {
 
 export const API_BASE_URL = getApiUrl();
 
+// Owner-configurable defaults
+const DEFAULT_INTEREST_RATE_KEY = 'defaultInterestRate';
+
+export function setDefaultInterestRate(rate: number) {
+  if (Number.isFinite(rate) && rate > 0) {
+    localStorage.setItem(DEFAULT_INTEREST_RATE_KEY, String(rate));
+  }
+}
+
+export function getDefaultInterestRate(fallback = 2): number {
+  const stored = localStorage.getItem(DEFAULT_INTEREST_RATE_KEY);
+  const parsed = stored ? parseFloat(stored) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+

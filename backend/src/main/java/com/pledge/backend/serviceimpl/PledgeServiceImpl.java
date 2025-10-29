@@ -42,15 +42,17 @@ public class PledgeServiceImpl implements PledgeService {
 		CustomerEntity customer = customerRepository.findById(request.getCustomerId())
 													.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-		// Calculate interest rate based on amount using InterestCalculationService
-		Double interestRate = interestCalculationService.getInterestRate(request.getAmount());
+        // Prefer owner-provided interestRate; fallback to slab-based service if not provided
+        Double interestRate = request.getInterestRate() != null && request.getInterestRate() > 0
+                ? request.getInterestRate()
+                : interestCalculationService.getInterestRate(request.getAmount());
 
 		PledgeEntity pledge = PledgeEntity.builder()
 										  .customer(customer)
 										  .title(request.getTitle())
 										  .description(request.getDescription())
 										  .amount(request.getAmount())
-										  .interestRate(interestRate)
+                                          .interestRate(interestRate)
 										  .createdAt(java.time.LocalDateTime.now())
 										  .deadline(request.getDeadline())
 									  .status(request.getStatus())
