@@ -29,6 +29,9 @@ interface Pledge {
   pledgeDuration?: number;
   status: "ACTIVE" | "COMPLETED" | "DEFAULTED" | "CLOSED" | string;
   notes?: string;
+  customerPhoto?: string;
+  itemPhoto?: string;
+  receiptPhoto?: string;
 }
 
 interface Payment {
@@ -48,6 +51,8 @@ const PledgeDetail = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [editAmountMode, setEditAmountMode] = useState(false);
+  const [editedAmount, setEditedAmount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchPledgeData = async () => {
@@ -232,9 +237,65 @@ const PledgeDetail = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm text-muted-foreground">Loan Amount</p>
-                <p className="text-2xl font-bold text-primary">
-                  {formatIndianCurrency(pledge.amount ?? pledge.loanAmount ?? 0, { showCurrency: true })}
-                </p>
+                {editAmountMode ? (
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      type="number"
+                      min={1}
+                      step="0.01"
+                      value={editedAmount ?? pledge.amount ?? 0}
+                      onChange={e => setEditedAmount(Number(e.target.value))}
+                      className="w-32"
+                    />
+                    <Button type="button" size="sm" onClick={async () => {
+                      setEditAmountMode(false);
+                      if (typeof editedAmount === 'number' && editedAmount !== pledge.amount && editedAmount > 0) {
+                        try {
+                          const token = localStorage.getItem("token");
+                          const apiUrl = localStorage.getItem('apiUrl') || (window.location.hostname !== 'localhost'
+                            ? `http://${window.location.hostname}:8099/api`
+                            : 'http://localhost:8099/api');
+                          // Ensure pledgeDuration is always set
+                          const payload = { ...pledge, amount: editedAmount };
+                          if (!payload.pledgeDuration) payload.pledgeDuration = 12; // fallback/default if missing
+                          const response = await fetch(`${apiUrl}/pledges/${pledge.id}`, {
+                            method: "PUT",
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${token}`
+                            },
+                            body: JSON.stringify(payload)
+                          });
+                          if (response.ok) {
+                            toast.success("Amount updated");
+                            // Refresh pledge
+                            const data = await response.json();
+                            setPledge(current => ({ ...current!, ...data, amount: data.amount }));
+                          } else {
+                            const errorText = await response.text();
+                            let errorMessage = "Failed to update amount";
+                            try {
+                              const errorData = JSON.parse(errorText);
+                              errorMessage = errorData.message || errorText;
+                            } catch {}
+                            toast.error(errorMessage);
+                          }
+                        } catch {
+                          toast.error("Network error");
+                        }
+                      }
+                    }}>Save</Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setEditAmountMode(false)}>Cancel</Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 items-center">
+                    <span className="text-2xl font-bold text-primary">{formatIndianCurrency(pledge.amount ?? pledge.loanAmount ?? 0, { showCurrency: true })}</span>
+                    <Button variant="outline" size="xs" onClick={() => {
+                      setEditAmountMode(true);
+                      setEditedAmount(pledge.amount ?? 0);
+                    }}>Edit</Button>
+                  </div>
+                )}
               </div>
 
               <div className="p-4 bg-gold/10 rounded-lg border border-gold/20">

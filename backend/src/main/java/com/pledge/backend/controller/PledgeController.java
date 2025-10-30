@@ -50,6 +50,11 @@ public class PledgeController {
 		return pledgeService.getPledgeById(id);
 	}
 
+    @PutMapping("/{id}")
+    public PledgeResponse updatePledge(@PathVariable Long id, @Valid @RequestBody PledgeRequest request) {
+        return pledgeService.updatePledge(id, request);
+    }
+
 	@PostMapping("/{id}/payments")
 	public PledgeResponse makePayment(@PathVariable("id") Long pledgeId, @Valid @RequestBody PaymentRequest request) {
 		System.out.println("Received payment request for pledge " + pledgeId + " with amount: " + request.getAmount());
