@@ -54,7 +54,7 @@ netstat -an | findstr 8099
 Should show: `0.0.0.0:8099` listening
 
 **Step 2:** On mobile:
-1. Visit: http://192.168.31.252:5173
+1. Visit: http://192.168.1.9:5173
 2. Try to login
 3. **Should work now!** ✅
 
@@ -79,7 +79,7 @@ netsh advfirewall firewall add rule name="Spring Boot Backend" dir=in action=all
 ### Check 3: Test backend from mobile
 On mobile browser, visit:
 ```
-http://192.168.31.252:8099/api/auth/login
+http://192.168.1.9:8099/api/auth/login
 ```
 
 Should see response (might be error, but should respond).
@@ -103,7 +103,7 @@ mvn spring-boot:run
 npm run dev
 
 # Check if accessible
-curl http://192.168.31.252:8099/api/auth/login
+curl http://192.168.1.9:8099/api/auth/login
 ```
 
 ---
@@ -111,7 +111,7 @@ curl http://192.168.31.252:8099/api/auth/login
 ## 🎯 Expected Result
 
 After restarting backend:
-1. Open: http://192.168.31.252:5173 on mobile
+1. Open: http://192.168.1.9:5173 on mobile
 2. Enter username and password
 3. Click Login
 4. **Should login successfully!** ✅

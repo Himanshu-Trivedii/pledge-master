@@ -27,7 +27,6 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoCapture, label, value 
     setPreviewUrl('');
     onPhotoCapture('');
   };
-
   return (
     <Card className="p-4">
       <div className="space-y-4">

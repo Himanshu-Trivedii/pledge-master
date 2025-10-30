@@ -72,7 +72,7 @@ npm run dev
 ### Step 2: Test on iPhone 13 Pro
 
 **On Mobile:**
-1. Visit: `http://192.168.31.252:5173`
+1. Visit: `http://192.168.1.9:5173`
 2. Login works
 3. Check Customers page - now in cards! ✅
 4. Check Pledges page - cards layout! ✅

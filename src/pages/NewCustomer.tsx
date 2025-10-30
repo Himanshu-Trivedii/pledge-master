@@ -64,7 +64,7 @@ const
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-		const response = await fetch("http://192.168.31.252:8099/api/customers", {
+		const response = await fetch("http://192.168.1.9:8099/api/customers", {
 			method: "POST",
         headers: {
           "Content-Type": "application/json",

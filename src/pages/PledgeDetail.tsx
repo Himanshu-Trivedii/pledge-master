@@ -238,59 +238,61 @@ const PledgeDetail = () => {
               <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm text-muted-foreground">Loan Amount</p>
                 {editAmountMode ? (
-                  <div className="flex gap-2 items-center">
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                     <Input
                       type="number"
                       min={1}
                       step="0.01"
                       value={editedAmount ?? pledge.amount ?? 0}
                       onChange={e => setEditedAmount(Number(e.target.value))}
-                      className="w-32"
+                      className="w-36 sm:w-40"
                     />
-                    <Button type="button" size="sm" onClick={async () => {
-                      setEditAmountMode(false);
-                      if (typeof editedAmount === 'number' && editedAmount !== pledge.amount && editedAmount > 0) {
-                        try {
-                          const token = localStorage.getItem("token");
-                          const apiUrl = localStorage.getItem('apiUrl') || (window.location.hostname !== 'localhost'
-                            ? `http://${window.location.hostname}:8099/api`
-                            : 'http://localhost:8099/api');
-                          // Ensure pledgeDuration is always set
-                          const payload = { ...pledge, amount: editedAmount };
-                          if (!payload.pledgeDuration) payload.pledgeDuration = 12; // fallback/default if missing
-                          const response = await fetch(`${apiUrl}/pledges/${pledge.id}`, {
-                            method: "PUT",
-                            headers: {
-                              'Content-Type': 'application/json',
-                              Authorization: `Bearer ${token}`
-                            },
-                            body: JSON.stringify(payload)
-                          });
-                          if (response.ok) {
-                            toast.success("Amount updated");
-                            // Refresh pledge
-                            const data = await response.json();
-                            setPledge(current => ({ ...current!, ...data, amount: data.amount }));
-                          } else {
-                            const errorText = await response.text();
-                            let errorMessage = "Failed to update amount";
-                            try {
-                              const errorData = JSON.parse(errorText);
-                              errorMessage = errorData.message || errorText;
-                            } catch {}
-                            toast.error(errorMessage);
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" onClick={async () => {
+                        setEditAmountMode(false);
+                        if (typeof editedAmount === 'number' && editedAmount !== pledge.amount && editedAmount > 0) {
+                          try {
+                            const token = localStorage.getItem("token");
+                            const apiUrl = localStorage.getItem('apiUrl') || (window.location.hostname !== 'localhost'
+                              ? `http://${window.location.hostname}:8099/api`
+                              : 'http://localhost:8099/api');
+                            // Ensure pledgeDuration is always set
+                            const payload = { ...pledge, amount: editedAmount };
+                            if (!payload.pledgeDuration) payload.pledgeDuration = 12; // fallback/default if missing
+                            const response = await fetch(`${apiUrl}/pledges/${pledge.id}`, {
+                              method: "PUT",
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`
+                              },
+                              body: JSON.stringify(payload)
+                            });
+                            if (response.ok) {
+                              toast.success("Amount updated");
+                              // Refresh pledge
+                              const data = await response.json();
+                              setPledge(current => ({ ...current!, ...data, amount: data.amount }));
+                            } else {
+                              const errorText = await response.text();
+                              let errorMessage = "Failed to update amount";
+                              try {
+                                const errorData = JSON.parse(errorText);
+                                errorMessage = errorData.message || errorText;
+                              } catch {}
+                              toast.error(errorMessage);
+                            }
+                          } catch {
+                            toast.error("Network error");
                           }
-                        } catch {
-                          toast.error("Network error");
                         }
-                      }
-                    }}>Save</Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => setEditAmountMode(false)}>Cancel</Button>
+                      }}>Save</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setEditAmountMode(false)}>Cancel</Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-2xl font-bold text-primary">{formatIndianCurrency(pledge.amount ?? pledge.loanAmount ?? 0, { showCurrency: true })}</span>
-                    <Button variant="outline" size="xs" onClick={() => {
+                    <Button variant="outline" size="sm" onClick={() => {
                       setEditAmountMode(true);
                       setEditedAmount(pledge.amount ?? 0);
                     }}>Edit</Button>
