@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Calculator } from "lucide-react";
 import { getDefaultInterestRate, setDefaultInterestRate } from "@/lib/config";
 import { z } from "zod";
+import { getApiUrl } from "@/lib/apiConfig";
 
 const pledgeSchema = z.object({
 	customerId: z.number().min(1, "Please select a customer"),
@@ -62,7 +63,8 @@ const NewPledge = () => {
 		const fetchCustomers = async () => {
 			try {
 				const token = localStorage.getItem("token");
-				const response = await fetch("http://localhost:8099/api/customers", {
+				const apiUrl = getApiUrl();
+				const response = await fetch(`${apiUrl}/customers`, {
 					headers: { Authorization: `Bearer ${token}` },
 				});
 				if (response.ok) {
@@ -151,7 +153,8 @@ const NewPledge = () => {
 		setLoading(true);
 		try {
 			const token = localStorage.getItem("token");
-			const response = await fetch("http://localhost:8099/api/pledges", {
+			const apiUrl = getApiUrl();
+			const response = await fetch(`${apiUrl}/pledges`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

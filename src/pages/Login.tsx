@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getApiUrl } from "@/lib/apiConfig";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,12 +20,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Dynamic API URL for mobile support
-      const apiUrl = localStorage.getItem('apiUrl') || 
-                     (window.location.hostname !== 'localhost' 
-                       ? `http://${window.location.hostname}:8099/api` 
-                       : 'http://localhost:8099/api');
-      
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: {

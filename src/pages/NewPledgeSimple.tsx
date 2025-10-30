@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { formatIndianCurrency, uploadToCloudinary } from '@/lib/utils';
 import { getDefaultInterestRate, setDefaultInterestRate } from '@/lib/config';
 import PhotoUpload from '@/components/PhotoUpload.tsx';
+import { z } from "zod";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface Customer {
   id: number;
@@ -51,8 +53,9 @@ const NewPledgeSimple = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
+        const apiUrl = getApiUrl();
 
-		  const response = await fetch("http://192.168.1.9:8099/api/customers", {
+		  const response = await fetch(`${apiUrl}/api/customers`, {
 
 			  // const response = await fetch("http://localhost:8099/api/customers", {
 
@@ -106,6 +109,7 @@ const NewPledgeSimple = () => {
     try {
       setSubmitting(true);
       const token = localStorage.getItem("token");
+      const apiUrl = getApiUrl();
       
       // Format deadline as LocalDateTime string without timezone (Spring expects no 'Z')
       const deadlineLocal = new Date(Date.now() + formData.pledgeDuration * 30 * 24 * 60 * 60 * 1000)
@@ -136,7 +140,7 @@ const NewPledgeSimple = () => {
 
       // const response = await fetch("http://localhost:8099/api/pledges", {
 
-		const response = await fetch("http://192.168.1.9:8099/api/pledges", {
+		const response = await fetch(`${apiUrl}/api/pledges`, {
 
 
 

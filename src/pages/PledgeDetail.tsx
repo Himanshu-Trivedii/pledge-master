@@ -9,6 +9,7 @@ import { ArrowLeft, Package, Weight, Calendar, User, DollarSign } from "lucide-r
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/PaymentModal";
 import { formatIndianCurrency } from "@/lib/utils";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface Pledge {
   id: number;
@@ -58,10 +59,7 @@ const PledgeDetail = () => {
     const fetchPledgeData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const apiUrl = localStorage.getItem('apiUrl') || 
-                       (window.location.hostname !== 'localhost' 
-                         ? `http://${window.location.hostname}:8099/api` 
-                         : 'http://localhost:8099/api');
+        const apiUrl = getApiUrl();
         
         // Fetch pledge data
         const pledgeResponse = await fetch(`${apiUrl}/pledges/${id}`, {
@@ -253,9 +251,7 @@ const PledgeDetail = () => {
                         if (typeof editedAmount === 'number' && editedAmount !== pledge.amount && editedAmount > 0) {
                           try {
                             const token = localStorage.getItem("token");
-                            const apiUrl = localStorage.getItem('apiUrl') || (window.location.hostname !== 'localhost'
-                              ? `http://${window.location.hostname}:8099/api`
-                              : 'http://localhost:8099/api');
+                            const apiUrl = getApiUrl();
                             // Ensure pledgeDuration is always set
                             const payload = { ...pledge, amount: editedAmount };
                             if (!payload.pledgeDuration) payload.pledgeDuration = 12; // fallback/default if missing
@@ -457,11 +453,9 @@ const PledgeDetail = () => {
               const fetchPledgeData = async () => {
                 try {
                   const token = localStorage.getItem("token");
+                  const apiUrl = getApiUrl();
                   
                   // Refresh pledge data
-                  const apiUrl = localStorage.getItem('apiUrl') || (window.location.hostname !== 'localhost' 
-                    ? `http://${window.location.hostname}:8099/api` 
-                    : 'http://localhost:8099/api');
                   const pledgeResponse = await fetch(`${apiUrl}/pledges/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                   });
