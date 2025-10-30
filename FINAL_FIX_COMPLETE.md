@@ -43,7 +43,7 @@ Added safe area padding for iOS devices:
 
 ### Step 2: Reinstall
 1. Open Safari
-2. Visit: http://192.168.1.7:5173
+2. Visit: http://192.168.31.252:5173
 3. Tap Share → Add to Home Screen
 
 ### Step 3: Test Sidebar

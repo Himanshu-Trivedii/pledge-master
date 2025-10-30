@@ -41,7 +41,7 @@ npm run dev
 ### Step 2: On Your Mobile Phone
 1. Connect to same WiFi
 2. Open Chrome browser
-3. Visit: **http://192.168.1.7:5173**
+3. Visit: **http://192.168.31.252:5173**
 4. **Login works automatically!** 🎉
 5. Tap menu (⋮) (three dots)
 6. Tap **"Add to Home screen"**
@@ -100,7 +100,7 @@ Your app is now:
 - Install from browser
 
 **For Mobile:**
-- http://192.168.1.7:5173
+- http://192.168.31.252:5173
 - Add to Home Screen works!
 
 **Both login and install prompt work!** ✅

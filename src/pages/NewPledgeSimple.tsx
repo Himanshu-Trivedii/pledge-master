@@ -52,7 +52,7 @@ const NewPledgeSimple = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-		  const response = await fetch("http://192.168.1.7:8099/api/customers", {
+		  const response = await fetch("http://192.168.31.252:8099/api/customers", {
 
 			  // const response = await fetch("http://localhost:8099/api/customers", {
 
@@ -136,7 +136,7 @@ const NewPledgeSimple = () => {
 
       // const response = await fetch("http://localhost:8099/api/pledges", {
 
-		const response = await fetch("http://192.168.1.7:8099/api/pledges", {
+		const response = await fetch("http://192.168.31.252:8099/api/pledges", {
 
 
 

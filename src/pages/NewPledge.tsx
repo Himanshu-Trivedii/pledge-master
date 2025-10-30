@@ -136,6 +136,18 @@ const NewPledge = () => {
 			return;
 		}
 
+		if (!customerPhotoUrl || !itemPhotoUrl || !receiptPhotoUrl) {
+            toast.error("Please upload all three required photos before submitting.");
+            setLoading(false);
+            return;
+        }
+
+		// Debug: log photo URLs right before submitting
+		console.log('DEBUG PHOTO URLS:');
+		console.log('Customer Photo:', customerPhotoUrl);
+		console.log('Item Photo:', itemPhotoUrl);
+		console.log('Receipt Photo:', receiptPhotoUrl);
+
 		setLoading(true);
 		try {
 			const token = localStorage.getItem("token");

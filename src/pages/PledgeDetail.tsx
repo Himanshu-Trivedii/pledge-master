@@ -288,22 +288,44 @@ const PledgeDetail = () => {
         </div>
 
         {/* Photos */}
-        {(pledge.customerPhoto || pledge.itemPhoto || pledge.receiptPhoto) && (
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4 text-foreground">Photos</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {pledge.customerPhoto && (
-                <img src={pledge.customerPhoto} alt="Customer" className="w-full h-48 object-cover rounded" />
+        <Card className="p-6">
+          <h3 className="text-xl font-semibold mb-4 text-foreground">Photos</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Customer Photo */}
+            <div className="flex flex-col items-center">
+              {pledge.customerPhoto ? (
+                <img src={pledge.customerPhoto} alt="Customer" className="w-full h-48 object-cover rounded mb-2" />
+              ) : (
+                <div className="w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2">
+                  No Customer Photo
+                </div>
               )}
-              {pledge.itemPhoto && (
-                <img src={pledge.itemPhoto} alt="Item" className="w-full h-48 object-cover rounded" />
-              )}
-              {pledge.receiptPhoto && (
-                <img src={pledge.receiptPhoto} alt="Receipt" className="w-full h-48 object-cover rounded" />
-              )}
+              <div className="text-center font-medium">Customer Photo</div>
             </div>
-          </Card>
-        )}
+            {/* Item Photo */}
+            <div className="flex flex-col items-center">
+              {pledge.itemPhoto ? (
+                <img src={pledge.itemPhoto} alt="Item" className="w-full h-48 object-cover rounded mb-2" />
+              ) : (
+                <div className="w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2">
+                  No Item Photo
+                </div>
+              )}
+              <div className="text-center font-medium">Item Photo</div>
+            </div>
+            {/* Receipt Photo */}
+            <div className="flex flex-col items-center">
+              {pledge.receiptPhoto ? (
+                <img src={pledge.receiptPhoto} alt="Receipt" className="w-full h-48 object-cover rounded mb-2" />
+              ) : (
+                <div className="w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2">
+                  No Receipt Photo
+                </div>
+              )}
+              <div className="text-center font-medium">Receipt Photo</div>
+            </div>
+          </div>
+        </Card>
 
         {/* Payment History */}
         <Card className="p-6">

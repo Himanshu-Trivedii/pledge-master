@@ -64,7 +64,7 @@ npm run dev
 **On your iPhone 13 Pro:**
 1. Connect to same WiFi
 2. Open Safari
-3. Visit: `http://192.168.1.7:5173`
+3. Visit: `http://192.168.31.252:5173`
 4. Login should work ✅
 5. Go to Pledges page
 6. **Pledges should now show!** ✅
@@ -97,7 +97,7 @@ npm run dev
 - [ ] All features work
 
 ### Mobile Test (iPhone 13 Pro):
-- [ ] http://192.168.1.7:5173 opens  
+- [ ] http://192.168.31.252:5173 opens  
 - [ ] Login works automatically
 - [ ] Pledges show in cards (not table)
 - [ ] Layout looks perfect on iPhone
@@ -137,7 +137,7 @@ npm run dev
 ```
 
 **Step 3:** Test on iPhone 13 Pro:
-- Visit: http://192.168.1.7:5173
+- Visit: http://192.168.31.252:5173
 - Login
 - Check Pledges - should show all ✅
 - Layout should be perfect ✅
