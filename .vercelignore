@@ -1,0 +1,17 @@
+backend/
+target/
+**/*.java
+pom.xml
+*.md
+*.ps1
+*.bat
+**/README*
+
+# Local dev artifacts
+node_modules/
+**/.env*
+
+# Build outputs not needed
+backend/target/
+
+
