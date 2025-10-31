@@ -1,36 +1,55 @@
+// src/lib/apiConfig.ts
+export function normalizeBaseUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+    // remove trailing slash
+    let u = url.trim().replace(/\/+$/, "");
+    // if it already ends with /api, keep as is; otherwise add /api
+    if (!/\/api$/i.test(u)) u = `${u}/api`;
+    return u;
+}
+
 export function getApiUrl(): string {
-	// 1) Highest priority: manual override set by user/admin
-	const stored = (typeof window !== 'undefined') ? localStorage.getItem('apiUrl') : null;
-	if (stored && /^https?:\/\//i.test(stored)) {
-		return stored.replace(/\/$/, '');
-	}
+    // 1) Highest priority: manual override stored in localStorage (for quick testing)
+    try {
+        if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("apiUrl");
+            if (stored && /^https?:\/\//i.test(stored)) {
+                const n = normalizeBaseUrl(stored);
+                if (n) return n;
+            }
+        }
+    } catch (e) {
+        // ignore localStorage errors in SSR
+    }
 
-	// 2) Environment-provided URL (Vite: VITE_API_URL)
-	const envUrl = (import.meta as any)?.env?.VITE_API_URL as string | undefined;
-	if (envUrl && /^https?:\/\//i.test(envUrl)) {
-		return envUrl.replace(/\/$/, '');
-	}
+    // 2) Next: Next/Vercel env var (NEXT_PUBLIC_API_BASE_URL)
+    // In Next/Vercel this is available at runtime via process.env
+    if (typeof process !== "undefined" && (process as any).env) {
+        const nextUrl = (process as any).env.NEXT_PUBLIC_API_BASE_URL as string | undefined;
+        const n = normalizeBaseUrl(nextUrl);
+        if (n) return n;
+    }
 
-	// 3) Derive based on current host
-	if (typeof window !== 'undefined') {
-		const host = window.location.hostname;
+    // 3) Vite env var (VITE_API_URL)
+    const viteUrl = (typeof import.meta !== "undefined" ? (import.meta as any).env?.VITE_API_URL : undefined) as string | undefined;
+    const nVite = normalizeBaseUrl(viteUrl);
+    if (nVite) return nVite;
 
-		// Local dev or LAN IPs → assume backend on port 8099
-		const isLocalHost = host === 'localhost' || host.startsWith('127.') || /^(\d+\.){3}\d+$/.test(host);
-		if (isLocalHost) {
-			return `http://${host}:8099/api`;
-		}
+    // 4) Derive based on current host (browser only)
+    if (typeof window !== "undefined") {
+        const host = window.location.hostname;
+        const isLocalHost = host === "localhost" || host.startsWith("127.") || /^(\d+\.){3}\d+$/.test(host);
+        if (isLocalHost) {
+            return `http://${host}:8099/api`;
+        }
 
-		// Production default strategies:
-		// a) api.<host>/api (common pattern)
-		const apiSubdomain = `https://api.${host}`;
-		// b) same origin /api (when reverse-proxied)
-		const sameOrigin = `${window.location.origin}/api`;
+        // prefer api.<host>/api by default
+        const apiSubdomain = `https://api.${host}/api`;
+        const sameOrigin = `${window.location.origin}/api`;
+        // prefer api subdomain first
+        return apiSubdomain;
+    }
 
-		// Prefer api.<host>/api by default; if a reverse proxy is configured, you can set VITE_API_URL
-		return `${apiSubdomain}/api` || sameOrigin;
-	}
-
-	// 4) Final fallback
-	return 'http://localhost:8099/api';
+    // 5) final fallback
+    return "http://localhost:8099/api";
 }
