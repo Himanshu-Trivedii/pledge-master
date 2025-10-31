@@ -7,44 +7,58 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 public class CorsConfig {
 
-	// ✅ Get allowed origins dynamically (set via environment variable in Render)
-	@Value("${cors.allowed.origins:http://localhost:3000}")
-	private String allowedOrigins;
+    @Value("${cors.allowed.origins:http://localhost:3000}")
+    private String allowedOrigins;
 
-	@Bean
-	public CorsFilter corsFilter() {
-		CorsConfiguration config = new CorsConfiguration();
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
 
-		// ✅ Split allowed origins from env var
-		config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+        // ✅ Support multiple origins (split by comma)
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        origins.replaceAll(String::trim); // remove spaces
+        config.setAllowedOrigins(origins);
 
-		config.setAllowCredentials(true);
+        // ✅ Allow credentials (for cookies / JWT)
+        config.setAllowCredentials(true);
 
-		config.setAllowedHeaders(List.of(
-				"Origin",
-				"Content-Type",
-				"Accept",
-				"Authorization"
-		));
+        // ✅ Common allowed headers
+        config.setAllowedHeaders(List.of(
+                "Origin",
+                "Content-Type",
+                "Accept",
+                "Authorization",
+                "X-Requested-With"
+        ));
 
-		config.setAllowedMethods(List.of(
-				"GET",
-				"POST",
-				"PUT",
-				"DELETE",
-				"OPTIONS"
-		));
+        // ✅ HTTP methods allowed
+        config.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+        ));
 
-		config.setExposedHeaders(List.of("Authorization"));
+        // ✅ Expose headers to frontend
+        config.setExposedHeaders(List.of(
+                "Authorization",
+                "Content-Disposition"
+        ));
 
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", config);
+        // ✅ Cache CORS preflight response
+        config.setMaxAge(3600L);
 
-		return new CorsFilter(source);
-	}
+        // ✅ Apply to all endpoints
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return new CorsFilter(source);
+    }
 }
