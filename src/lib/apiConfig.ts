@@ -43,11 +43,15 @@ export function getApiUrl(): string {
             return `http://${host}:8099/api`;
         }
 
-        // prefer api.<host>/api by default
-        const apiSubdomain = `https://api.${host}/api`;
-        const sameOrigin = `${window.location.origin}/api`;
-        // prefer api subdomain first
-        return apiSubdomain;
+        // // prefer api.<host>/api by default
+        // const apiSubdomain = `https://api.${host}/api`;
+        // const sameOrigin = `${window.location.origin}/api`;
+        // // prefer api subdomain first
+        // return apiSubdomain;
+
+        // use same origin (for production on Vercel / Railway)
+        return `${window.location.origin}/api`;
+
     }
 
     // 5) final fallback
