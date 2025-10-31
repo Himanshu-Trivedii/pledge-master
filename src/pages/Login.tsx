@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getApiUrl } from "@/lib/apiConfig";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
