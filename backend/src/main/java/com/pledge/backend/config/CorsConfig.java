@@ -23,7 +23,8 @@ public class CorsConfig {
         // ✅ Support multiple origins (split by comma)
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         origins.replaceAll(String::trim); // remove spaces
-        config.setAllowedOrigins(origins);
+        config.setAllowedOriginPatterns(origins);
+
 
         // ✅ Allow credentials (for cookies / JWT)
         config.setAllowCredentials(true);
