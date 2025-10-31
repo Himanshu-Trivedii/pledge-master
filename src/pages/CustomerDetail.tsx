@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, MapPin, FileText, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { formatIndianCurrency } from "@/lib/utils";
 
 interface Customer {
   id: number;
@@ -15,20 +16,25 @@ interface Customer {
   address: string;
   idProofType: string;
   idProofNumber: string;
-  activePledges: number;
-  totalLoans: number;
-  createdDate: string;
+  createdAt: string;
+  isActive: boolean;
 }
 
 interface Pledge {
   id: number;
+  customerId: number;
+  title: string;
+  description: string;
+  amount: number;
+  interestRate: number;
+  createdAt: string;
+  deadline: string;
+  status: string;
   itemType: string;
   weight: number;
   purity: string;
-  loanAmount: number;
-  interestRate: number;
-  pledgeDate: string;
-  status: "active" | "settled" | "overdue";
+  notes: string;
+  pledgeDuration: number;
 }
 
 const CustomerDetail = () => {
@@ -42,10 +48,14 @@ const CustomerDetail = () => {
     const fetchCustomerData = async () => {
       try {
         const token = localStorage.getItem("token");
+        const apiUrl = localStorage.getItem('apiUrl') || 
+                       (window.location.hostname !== 'localhost' 
+                         ? `http://${window.location.hostname}:8099/api` 
+                         : 'http://localhost:8099/api');
         
         // Fetch customer details
         const customerResponse = await fetch(
-          `http://localhost:8080/api/customers/${id}`,
+          `${apiUrl}/customers/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -53,11 +63,11 @@ const CustomerDetail = () => {
 
         if (customerResponse.ok) {
           const customerData = await customerResponse.json();
-          setCustomer(customerData);
+          setCustomer(customerData.data);
 
           // Fetch customer's pledges
           const pledgesResponse = await fetch(
-            `http://localhost:8080/api/customers/${id}/pledges`,
+            `${apiUrl}/pledges/customer/${id}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -65,7 +75,11 @@ const CustomerDetail = () => {
 
           if (pledgesResponse.ok) {
             const pledgesData = await pledgesResponse.json();
-            setPledges(pledgesData);
+            setPledges(pledgesData || []);
+            
+            // Debug: Log pledge data
+            console.log("DEBUG: Customer pledges:", pledgesData);
+            console.log("DEBUG: Active pledges count:", pledgesData?.filter((p: any) => p.status?.toUpperCase() === 'ACTIVE').length);
           }
         } else {
           toast.error("Customer not found");
@@ -82,12 +96,17 @@ const CustomerDetail = () => {
   }, [id, navigate]);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
+    switch (status?.toUpperCase()) {
+      case "ACTIVE":
         return "bg-success/10 text-success border-success/20";
-      case "settled":
+      case "PARTIALLY_PAID":
+        return "bg-warning/10 text-warning border-warning/20";
+      case "SETTLED":
+      case "COMPLETED":
+      case "CLOSED":
         return "bg-muted text-muted-foreground border-border";
-      case "overdue":
+      case "OVERDUE":
+      case "DEFAULTED":
         return "bg-destructive/10 text-destructive border-destructive/20";
       default:
         return "bg-muted text-muted-foreground border-border";
@@ -173,20 +192,25 @@ const CustomerDetail = () => {
             <div className="space-y-4">
               <div className="p-4 bg-gold/10 rounded-lg border border-gold/20">
                 <p className="text-sm text-muted-foreground">Active Pledges</p>
-                <p className="text-3xl font-bold text-gold">{customer.activePledges}</p>
+                <p className="text-3xl font-bold text-gold">
+                  {pledges.filter(pledge => {
+                    const status = pledge.status?.toUpperCase();
+                    return status === 'ACTIVE' || status === 'PARTIALLY_PAID';
+                  }).length}
+                </p>
               </div>
 
               <div className="p-4 bg-secondary rounded-lg border border-border">
                 <p className="text-sm text-muted-foreground">Total Loans</p>
                 <p className="text-3xl font-bold text-foreground">
-                  ₹{customer.totalLoans.toLocaleString()}
+                  {formatIndianCurrency(pledges.reduce((total, pledge) => total + pledge.amount, 0), { showCurrency: true })}
                 </p>
               </div>
 
               <div className="p-4 bg-secondary rounded-lg border border-border">
                 <p className="text-sm text-muted-foreground">Customer Since</p>
                 <p className="text-lg font-semibold text-foreground">
-                  {new Date(customer.createdDate).toLocaleDateString("en-IN", {
+                  {new Date(customer.createdAt).toLocaleDateString("en-IN", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -231,11 +255,11 @@ const CustomerDetail = () => {
                       <td className="p-4 text-foreground">{pledge.weight}g</td>
                       <td className="p-4 text-gold font-semibold">{pledge.purity}</td>
                       <td className="p-4 font-semibold text-foreground">
-                        ₹{pledge.loanAmount.toLocaleString()}
+                        {formatIndianCurrency(pledge.amount, { showCurrency: true })}
                       </td>
                       <td className="p-4 text-gold">{pledge.interestRate}%</td>
                       <td className="p-4 text-muted-foreground">
-                        {new Date(pledge.pledgeDate).toLocaleDateString()}
+                        {new Date(pledge.createdAt).toLocaleDateString()}
                       </td>
                       <td className="p-4">
                         <Badge className={getStatusColor(pledge.status)}>{pledge.status}</Badge>

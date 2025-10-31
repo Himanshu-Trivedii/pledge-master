@@ -21,7 +21,8 @@ const customerSchema = z.object({
 
 type CustomerFormData = z.infer<typeof customerSchema>;
 
-const NewCustomer = () => {
+const
+    NewCustomer = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CustomerFormData>({
@@ -63,8 +64,8 @@ const NewCustomer = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/customers", {
-        method: "POST",
+		const response = await fetch("http://192.168.1.9:8099/api/customers", {
+			method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

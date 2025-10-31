@@ -1,95 +1,121 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Lock, User } from "lucide-react";
+import { getApiUrl } from "@/lib/apiConfig";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Replace with your Spring Boot backend URL
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
+      const data = await response.json();
+
+      if (data.success) {
+        // Store the token and user info
+        localStorage.setItem("token", data.data.token);
+        localStorage.setItem("username", data.data.username);
+        localStorage.setItem("role", data.data.role);
+
         toast.success("Login successful!");
-        navigate("/dashboard");
+        navigate("/dashboard"); // Redirect to dashboard after login
       } else {
-        toast.error("Invalid credentials");
+        toast.error(data.message || "Login failed");
       }
     } catch (error) {
-      toast.error("Connection error. Please check your backend server.");
+      toast.error("Connection error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/10 rounded-full mb-4">
-            <Lock className="h-8 w-8 text-gold" />
-          </div>
-          <h1 className="text-3xl font-bold text-gold">Gode Jewellers</h1>
-          <p className="text-muted-foreground">Loan Management System</p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-gold/10">
+      <Card className="w-full max-w-md p-6 space-y-6 shadow-2xl border-2 border-gold/20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center animate-in zoom-in duration-300">
             <div className="relative">
-              <User className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-              <Input
-                id="username"
-                type="text"
-                placeholder="Enter username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="pl-10"
-                required
+              <div className="absolute inset-0 bg-gold/20 rounded-full blur-xl"></div>
+              <img 
+                src="/logos/Gode_Jwellers_Logo.jpg"
+                alt="Gode Jewellers Logo" 
+                className="w-24 h-24 rounded-full border-4 border-gold shadow-lg relative"
               />
             </div>
+          </div>
+          <div className="space-y-2 animate-in slide-in-from-top duration-500 delay-200">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gold to-gold/60 bg-clip-text text-transparent">
+              Gode Jewellers
+            </h1>
+            <h2 className="text-xl font-semibold text-foreground">Pledge Management System</h2>
+            <p className="text-muted-foreground">Enter your credentials to continue</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+			  
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              type="text"
+              value={formData.username}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, username: e.target.value }))
+              }
+              placeholder="Enter username"
+              required
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, password: e.target.value }))
+              }
+              placeholder="Enter password"
+              required
+            />
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-gold to-gold/80 hover:from-gold/90 hover:to-gold/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50" 
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
+
+        {/*<p className="text-sm text-center text-muted-foreground">*/}
+        {/*  Use admin credentials:<br />*/}
+        {/*  Username: admin<br />*/}
+        {/*  Password: admin123*/}
+        {/*</p>*/}
       </Card>
     </div>
   );
