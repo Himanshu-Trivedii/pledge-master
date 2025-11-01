@@ -18,20 +18,14 @@ public class CustomerEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, length = 15)
+    @Column(nullable = true, length = 15)
     private String phone;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String email;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = true, length = 500)
     private String address;
-
-    @Column(name = "id_proof_type", nullable = false)
-    private String idProofType;
-
-    @Column(name = "id_proof_number", nullable = false, length = 50)
-    private String idProofNumber;
 
     private LocalDateTime createdAt;
 

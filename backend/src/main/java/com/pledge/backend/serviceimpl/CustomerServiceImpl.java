@@ -25,12 +25,18 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerEntity createCustomer(CustomerRequest request) {
         log.info("Creating new customer with email: {}", request.getEmail());
 
-        if (customerRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+        // Only check email uniqueness if email is provided
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            if (customerRepository.existsByEmail(request.getEmail())) {
+                throw new IllegalArgumentException("Email already exists");
+            }
         }
 
-        if (customerRepository.existsByPhone(request.getPhone())) {
-            throw new IllegalArgumentException("Phone number already exists");
+        // Only check phone uniqueness if phone is provided
+        if (request.getPhone() != null && !request.getPhone().trim().isEmpty()) {
+            if (customerRepository.existsByPhone(request.getPhone())) {
+                throw new IllegalArgumentException("Phone number already exists");
+            }
         }
 
         CustomerEntity customer = CustomerEntity.builder()
@@ -38,8 +44,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .address(request.getAddress())
-                .idProofType(request.getIdProofType())
-                .idProofNumber(request.getIdProofNumber())
                 .createdAt(LocalDateTime.now())
                 .isActive(true)
                 .build();
@@ -71,23 +75,27 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         // Check if email is being changed and if it's already taken
-        if (!existingCustomer.getEmail().equals(request.getEmail())
-                && customerRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            String existingEmail = existingCustomer.getEmail() != null ? existingCustomer.getEmail() : "";
+            if (!existingEmail.equals(request.getEmail())
+                    && customerRepository.existsByEmail(request.getEmail())) {
+                throw new IllegalArgumentException("Email already exists");
+            }
         }
 
         // Check if phone is being changed and if it's already taken
-        if (!existingCustomer.getPhone().equals(request.getPhone())
-                && customerRepository.existsByPhone(request.getPhone())) {
-            throw new IllegalArgumentException("Phone number already exists");
+        if (request.getPhone() != null && !request.getPhone().trim().isEmpty()) {
+            String existingPhone = existingCustomer.getPhone() != null ? existingCustomer.getPhone() : "";
+            if (!existingPhone.equals(request.getPhone())
+                    && customerRepository.existsByPhone(request.getPhone())) {
+                throw new IllegalArgumentException("Phone number already exists");
+            }
         }
 
         existingCustomer.setName(request.getName());
         existingCustomer.setEmail(request.getEmail());
         existingCustomer.setPhone(request.getPhone());
         existingCustomer.setAddress(request.getAddress());
-        existingCustomer.setIdProofType(request.getIdProofType());
-        existingCustomer.setIdProofNumber(request.getIdProofNumber());
 
         CustomerEntity updatedCustomer = customerRepository.save(existingCustomer);
         log.info("Customer updated successfully");

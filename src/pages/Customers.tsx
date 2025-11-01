@@ -27,8 +27,6 @@ interface Customer {
   phone: string;
   email: string;
   address: string;
-  idProofType: string;
-  idProofNumber: string;
 }
 
 const Customers = () => {
@@ -49,11 +47,9 @@ const Customers = () => {
     } else {
       const filtered = customers.filter(customer => 
         customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.phone.includes(searchTerm) ||
-        customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.idProofType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.idProofNumber.toLowerCase().includes(searchTerm.toLowerCase())
+        (customer.phone && customer.phone.includes(searchTerm)) ||
+        (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (customer.address && customer.address.toLowerCase().includes(searchTerm.toLowerCase()))
       );
       setFilteredCustomers(filtered);
     }
@@ -270,12 +266,6 @@ const Customers = () => {
                       <MapPin className="mr-2 h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                       <span className="text-muted-foreground break-words">{customer.address}</span>
                     </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-1">ID Proof</p>
-                    <p className="text-sm font-semibold text-foreground">{customer.idProofType}</p>
-                    <p className="text-xs text-muted-foreground mt-1 break-all">{customer.idProofNumber}</p>
                   </div>
                 </div>
               </Card>

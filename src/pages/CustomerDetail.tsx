@@ -26,8 +26,6 @@ interface Customer {
   phone: string;
   email: string;
   address: string;
-  idProofType: string;
-  idProofNumber: string;
   createdAt: string;
   isActive: boolean;
 }
@@ -237,15 +235,6 @@ const CustomerDetail = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <FileText className="h-5 w-5 text-gold mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">ID Proof</p>
-                  <p className="font-medium text-foreground">
-                    {customer.idProofType} - {customer.idProofNumber}
-                  </p>
-                </div>
-              </div>
             </div>
           </Card>
 

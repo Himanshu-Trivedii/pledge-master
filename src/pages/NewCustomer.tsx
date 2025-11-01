@@ -14,11 +14,15 @@ import { getApiUrl } from "@/lib/apiConfig";
 
 const customerSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
-  phone: z.string().trim().min(10, "Invalid phone number").max(15, "Invalid phone number"),
-  email: z.string().trim().email("Invalid email").max(255, "Email too long"),
-  address: z.string().trim().min(1, "Address is required").max(500, "Address too long"),
-  idProofType: z.string().trim().min(1, "ID proof type is required"),
-  idProofNumber: z.string().trim().min(1, "ID proof number is required").max(50, "ID proof number too long"),
+  phone: z.string().trim().max(15, "Invalid phone number").optional(),
+  email: z.string().trim().max(255, "Email too long").refine(
+    (val) => {
+      if (!val || val.length === 0) return true;
+      return z.string().email().safeParse(val).success;
+    },
+    { message: "Invalid email format" }
+  ).optional(),
+  address: z.string().trim().max(500, "Address too long").optional(),
 });
 
 type CustomerFormData = z.infer<typeof customerSchema>;
@@ -29,15 +33,13 @@ const
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CustomerFormData>({
     name: "",
-    phone: "",
-    email: "",
-    address: "",
-    idProofType: "",
-    idProofNumber: "",
+    phone: undefined,
+    email: undefined,
+    address: undefined,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerFormData, string>>>({});
 
-  const handleChange = (field: keyof CustomerFormData, value: string) => {
+  const handleChange = (field: keyof CustomerFormData, value: string | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -74,7 +76,12 @@ const
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(result.data),
+                    body: JSON.stringify({
+                      name: result.data.name,
+                      phone: result.data.phone || null,
+                      email: result.data.email || null,
+                      address: result.data.address || null,
+                    }),
                 });
 
                 if (response.ok) {
@@ -168,72 +175,42 @@ const
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <Input
                     id="phone"
                     type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="Enter phone number"
+                    value={formData.phone ?? ""}
+                    onChange={(e) => handleChange("phone", e.target.value || undefined)}
+                    placeholder="Enter phone number (optional)"
                     className={errors.phone ? "border-destructive" : ""}
                   />
                   {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    placeholder="Enter email address"
+                    value={formData.email ?? ""}
+                    onChange={(e) => handleChange("email", e.target.value || undefined)}
+                    placeholder="Enter email address (optional)"
                     className={errors.email ? "border-destructive" : ""}
                   />
                   {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Address *</Label>
+                  <Label htmlFor="address">Address</Label>
                   <Textarea
                     id="address"
-                    value={formData.address}
-                    onChange={(e) => handleChange("address", e.target.value)}
-                    placeholder="Enter complete address"
+                    value={formData.address ?? ""}
+                    onChange={(e) => handleChange("address", e.target.value || undefined)}
+                    placeholder="Enter complete address (optional)"
                     rows={3}
                     className={errors.address ? "border-destructive" : ""}
                   />
                   {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
-                </div>
-              </div>
-            </div>
-
-            {/* ID Proof */}
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-4">Identity Proof</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="idProofType">ID Proof Type *</Label>
-                  <Input
-                    id="idProofType"
-                    value={formData.idProofType}
-                    onChange={(e) => handleChange("idProofType", e.target.value)}
-                    placeholder="e.g., Aadhaar, PAN, Passport"
-                    className={errors.idProofType ? "border-destructive" : ""}
-                  />
-                  {errors.idProofType && <p className="text-sm text-destructive">{errors.idProofType}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="idProofNumber">ID Proof Number *</Label>
-                  <Input
-                    id="idProofNumber"
-                    value={formData.idProofNumber}
-                    onChange={(e) => handleChange("idProofNumber", e.target.value)}
-                    placeholder="Enter ID number"
-                    className={errors.idProofNumber ? "border-destructive" : ""}
-                  />
-                  {errors.idProofNumber && <p className="text-sm text-destructive">{errors.idProofNumber}</p>}
                 </div>
               </div>
             </div>
