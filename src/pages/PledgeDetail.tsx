@@ -68,6 +68,21 @@ const PledgeDetail = () => {
 
         if (pledgeResponse.ok) {
           const data = await pledgeResponse.json();
+          // Debug: Log the response to see what we're getting
+          console.log("Pledge data received:", data);
+          console.log("Photo URLs:", {
+            customerPhoto: data.customerPhoto,
+            itemPhoto: data.itemPhoto,
+            receiptPhoto: data.receiptPhoto
+          });
+          
+          // Helper function to validate and clean photo URLs
+          const cleanPhotoUrl = (url: string | null | undefined): string | undefined => {
+            if (!url) return undefined;
+            const cleaned = url.trim();
+            return cleaned.length > 0 ? cleaned : undefined;
+          };
+          
           // Normalize fields for UI
           const normalized: Pledge = {
             ...data,
@@ -76,10 +91,15 @@ const PledgeDetail = () => {
             itemType: data.itemType ?? data.title ?? "Pledge Item",
             pledgeDate: data.createdAt ?? new Date().toISOString(),
             status: (data.status || "").toString(),
-            customerPhoto: data.customerPhoto,
-            itemPhoto: data.itemPhoto,
-            receiptPhoto: data.receiptPhoto,
+            customerPhoto: cleanPhotoUrl(data.customerPhoto),
+            itemPhoto: cleanPhotoUrl(data.itemPhoto),
+            receiptPhoto: cleanPhotoUrl(data.receiptPhoto),
           };
+          console.log("Normalized pledge with photos:", {
+            customerPhoto: normalized.customerPhoto,
+            itemPhoto: normalized.itemPhoto,
+            receiptPhoto: normalized.receiptPhoto
+          });
           setPledge(normalized);
         } else {
           toast.error("Pledge not found");
@@ -352,8 +372,24 @@ const PledgeDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Customer Photo */}
             <div className="flex flex-col items-center">
-              {pledge.customerPhoto ? (
-                <img src={pledge.customerPhoto} alt="Customer" className="w-full h-48 object-cover rounded mb-2" />
+              {pledge.customerPhoto && pledge.customerPhoto.trim() ? (
+                <img 
+                  src={pledge.customerPhoto} 
+                  alt="Customer" 
+                  className="w-full h-48 object-cover rounded mb-2"
+                  onError={(e) => {
+                    console.error("Error loading customer photo:", pledge.customerPhoto);
+                    // Replace broken image with placeholder
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      e.currentTarget.style.display = 'none';
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2';
+                      placeholder.textContent = 'No Customer Photo';
+                      parent.insertBefore(placeholder, e.currentTarget);
+                    }
+                  }}
+                />
               ) : (
                 <div className="w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2">
                   No Customer Photo
@@ -363,8 +399,24 @@ const PledgeDetail = () => {
             </div>
             {/* Item Photo */}
             <div className="flex flex-col items-center">
-              {pledge.itemPhoto ? (
-                <img src={pledge.itemPhoto} alt="Item" className="w-full h-48 object-cover rounded mb-2" />
+              {pledge.itemPhoto && pledge.itemPhoto.trim() ? (
+                <img 
+                  src={pledge.itemPhoto} 
+                  alt="Item" 
+                  className="w-full h-48 object-cover rounded mb-2"
+                  onError={(e) => {
+                    console.error("Error loading item photo:", pledge.itemPhoto);
+                    // Replace broken image with placeholder
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      e.currentTarget.style.display = 'none';
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2';
+                      placeholder.textContent = 'No Item Photo';
+                      parent.insertBefore(placeholder, e.currentTarget);
+                    }
+                  }}
+                />
               ) : (
                 <div className="w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2">
                   No Item Photo
@@ -374,8 +426,24 @@ const PledgeDetail = () => {
             </div>
             {/* Receipt Photo */}
             <div className="flex flex-col items-center">
-              {pledge.receiptPhoto ? (
-                <img src={pledge.receiptPhoto} alt="Receipt" className="w-full h-48 object-cover rounded mb-2" />
+              {pledge.receiptPhoto && pledge.receiptPhoto.trim() ? (
+                <img 
+                  src={pledge.receiptPhoto} 
+                  alt="Receipt" 
+                  className="w-full h-48 object-cover rounded mb-2"
+                  onError={(e) => {
+                    console.error("Error loading receipt photo:", pledge.receiptPhoto);
+                    // Replace broken image with placeholder
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      e.currentTarget.style.display = 'none';
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2';
+                      placeholder.textContent = 'No Receipt Photo';
+                      parent.insertBefore(placeholder, e.currentTarget);
+                    }
+                  }}
+                />
               ) : (
                 <div className="w-full h-48 bg-secondary flex items-center justify-center rounded text-muted-foreground mb-2">
                   No Receipt Photo
@@ -462,6 +530,14 @@ const PledgeDetail = () => {
 
                   if (pledgeResponse.ok) {
                     const data = await pledgeResponse.json();
+                    
+                    // Helper function to validate and clean photo URLs
+                    const cleanPhotoUrl = (url: string | null | undefined): string | undefined => {
+                      if (!url) return undefined;
+                      const cleaned = url.trim();
+                      return cleaned.length > 0 ? cleaned : undefined;
+                    };
+                    
                     const normalized: Pledge = {
                       ...data,
                       loanAmount: data.amount ?? 0,
@@ -469,6 +545,9 @@ const PledgeDetail = () => {
                       itemType: data.itemType ?? data.title ?? "Pledge Item",
                       pledgeDate: data.createdAt ?? new Date().toISOString(),
                       status: (data.status || "").toString(),
+                      customerPhoto: cleanPhotoUrl(data.customerPhoto),
+                      itemPhoto: cleanPhotoUrl(data.itemPhoto),
+                      receiptPhoto: cleanPhotoUrl(data.receiptPhoto),
                     };
                     setPledge(normalized);
                   }
