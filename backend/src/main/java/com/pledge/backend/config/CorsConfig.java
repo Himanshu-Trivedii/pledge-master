@@ -13,50 +13,36 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${cors.allowed.origins:http://localhost:3000}")
+    @Value("${cors.allowed.origins:http://localhost:3000,https://godejewellers.in,https://www.godejewellers.in,https://pledge-master.vercel.app}")
     private String allowedOrigins;
 
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Support multiple origins (split by comma)
+        // Split by comma to allow multiple origins
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        origins.replaceAll(String::trim); // remove spaces
+        origins.replaceAll(String::trim);
         config.setAllowedOriginPatterns(origins);
 
-
-        // ✅ Allow credentials (for cookies / JWT)
+        // Allow credentials (cookies/JWT)
         config.setAllowCredentials(true);
 
-        // ✅ Common allowed headers
+        // Allow all necessary headers
         config.setAllowedHeaders(List.of(
-                "Origin",
-                "Content-Type",
-                "Accept",
-                "Authorization",
-                "X-Requested-With"
+                "Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"
         ));
 
-        // ✅ HTTP methods allowed
-        config.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-        ));
+        // Allow HTTP methods
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        // ✅ Expose headers to frontend
-        config.setExposedHeaders(List.of(
-                "Authorization",
-                "Content-Disposition"
-        ));
+        // Expose headers to frontend
+        config.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
 
-        // ✅ Cache CORS preflight response
+        // Cache preflight response
         config.setMaxAge(3600L);
 
-        // ✅ Apply to all endpoints
+        // Apply globally
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
