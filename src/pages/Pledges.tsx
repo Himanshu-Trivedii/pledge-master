@@ -4,10 +4,22 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { formatIndianCurrency } from "@/lib/utils";
 import { getApiUrl } from "@/lib/apiConfig";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Pledge {
   id: number;
@@ -31,35 +43,35 @@ const Pledges = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPledges = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const apiUrl = getApiUrl();
-        const response = await fetch(`${apiUrl}/pledges`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          console.error("Failed to fetch pledges:", response.status);
-          setPledges([]);
-          return;
-        }
-        const body = await response.json().catch(() => null);
-        if (!body) {
-          setPledges([]);
-          return;
-        }
-        // Backend may return either a raw list or ApiResponse { success, message, data }
-        const maybeList = Array.isArray(body) ? body : body?.data;
-        setPledges(Array.isArray(maybeList) ? maybeList : []);
-      } catch (error) {
-        console.error("Error fetching pledges:", error);
+  const fetchPledges = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/pledges`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        console.error("Failed to fetch pledges:", response.status);
         setPledges([]);
+        return;
       }
-    };
+      const body = await response.json().catch(() => null);
+      if (!body) {
+        setPledges([]);
+        return;
+      }
+      // Backend may return either a raw list or ApiResponse { success, message, data }
+      const maybeList = Array.isArray(body) ? body : body?.data;
+      setPledges(Array.isArray(maybeList) ? maybeList : []);
+    } catch (error) {
+      console.error("Error fetching pledges:", error);
+      setPledges([]);
+    }
+  };
 
+  useEffect(() => {
     fetchPledges();
   }, []);
 
@@ -141,9 +153,69 @@ const Pledges = () => {
                       <h3 className="font-semibold text-base sm:text-lg text-foreground truncate">{pledge.itemType}</h3>
                       <p className="text-sm text-muted-foreground mt-1">Weight: {pledge.weight}g</p>
                     </div>
-                    <Badge className={`${getStatusColor(pledge.status)} flex-shrink-0`}>
-                      {pledge.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${getStatusColor(pledge.status)} flex-shrink-0`}>
+                        {pledge.status}
+                      </Badge>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="flex-shrink-0 text-destructive hover:text-destructive h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Pledge</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this pledge? This action cannot be undone and will also delete all associated payments.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const token = localStorage.getItem("token");
+                                  const apiUrl = getApiUrl();
+                                  const response = await fetch(`${apiUrl}/pledges/${pledge.id}`, {
+                                    method: "DELETE",
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  });
+
+                                  if (response.ok) {
+                                    const result = await response.json();
+                                    if (result.success) {
+                                      toast.success("Pledge deleted successfully");
+                                      fetchPledges(); // Refresh the list
+                                    } else {
+                                      toast.error(result.message || "Failed to delete pledge");
+                                    }
+                                  } else {
+                                    const errorData = await response.json().catch(() => ({ message: "Failed to delete pledge" }));
+                                    toast.error(errorData.message || "Failed to delete pledge");
+                                  }
+                                } catch (error) {
+                                  toast.error("Error deleting pledge");
+                                }
+                              }}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">

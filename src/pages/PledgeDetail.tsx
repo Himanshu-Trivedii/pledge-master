@@ -5,11 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Package, Weight, Calendar, User, DollarSign } from "lucide-react";
+import { ArrowLeft, Package, Weight, Calendar, User, DollarSign, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/PaymentModal";
 import { formatIndianCurrency } from "@/lib/utils";
 import { getApiUrl } from "@/lib/apiConfig";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Pledge {
   id: number;
@@ -186,7 +197,60 @@ const PledgeDetail = () => {
               <p className="text-muted-foreground mt-2">{pledge.itemType}</p>
             </div>
           </div>
-          <Badge className={getStatusColor(pledge.status)}>{pledge.status}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={getStatusColor(pledge.status)}>{pledge.status}</Badge>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive hover:text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Pledge</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this pledge? This action cannot be undone and will also delete all associated payments.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem("token");
+                        const apiUrl = getApiUrl();
+                        const response = await fetch(`${apiUrl}/pledges/${id}`, {
+                          method: "DELETE",
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        });
+
+                        if (response.ok) {
+                          const result = await response.json();
+                          if (result.success) {
+                            toast.success("Pledge deleted successfully");
+                            navigate("/pledges");
+                          } else {
+                            toast.error(result.message || "Failed to delete pledge");
+                          }
+                        } else {
+                          const errorData = await response.json().catch(() => ({ message: "Failed to delete pledge" }));
+                          toast.error(errorData.message || "Failed to delete pledge");
+                        }
+                      } catch (error) {
+                        toast.error("Error deleting pledge");
+                      }
+                    }}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
 
         {/* Main Information Grid */}

@@ -2,8 +2,11 @@ package com.pledge.backend.controller;
 
 import com.pledge.backend.dto.request.PledgeRequest;
 import com.pledge.backend.dto.request.PaymentRequest;
+import com.pledge.backend.dto.response.ApiResponse;
 import com.pledge.backend.dto.response.PledgeResponse;
 import com.pledge.backend.service.PledgeService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import jakarta.validation.Valid;
@@ -66,6 +69,17 @@ public class PledgeController {
 			System.err.println("Error recording payment for pledge " + pledgeId + ": " + e.getMessage());
 			e.printStackTrace();
 			throw e;
+		}
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<ApiResponse<Void>> deletePledge(@PathVariable Long id) {
+		try {
+			pledgeService.deletePledge(id);
+			return ResponseEntity.ok(new ApiResponse<>(true, "Pledge deleted successfully", null));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(new ApiResponse<>(false, e.getMessage(), null));
 		}
 	}
 

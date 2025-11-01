@@ -4,10 +4,21 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, MapPin, FileText, Edit } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, FileText, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatIndianCurrency } from "@/lib/utils";
 import { getApiUrl } from "@/lib/apiConfig";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Customer {
   id: number;
@@ -138,10 +149,63 @@ const CustomerDetail = () => {
               <p className="text-muted-foreground mt-2">Customer Details</p>
             </div>
           </div>
-          <Button variant="outline">
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Customer
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline">
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Customer
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive hover:text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Customer
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete customer "{customer.name}"? This action cannot be undone and will also delete all associated pledges.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem("token");
+                        const apiUrl = getApiUrl();
+                        const response = await fetch(`${apiUrl}/customers/${id}`, {
+                          method: "DELETE",
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        });
+
+                        if (response.ok) {
+                          const result = await response.json();
+                          if (result.success) {
+                            toast.success("Customer deleted successfully");
+                            navigate("/customers");
+                          } else {
+                            toast.error(result.message || "Failed to delete customer");
+                          }
+                        } else {
+                          const errorData = await response.json().catch(() => ({ message: "Failed to delete customer" }));
+                          toast.error(errorData.message || "Failed to delete customer");
+                        }
+                      } catch (error) {
+                        toast.error("Error deleting customer");
+                      }
+                    }}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
 
         {/* Customer Information */}

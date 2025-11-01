@@ -6,8 +6,19 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { UserPlus, Phone, Mail, MapPin, Search, Edit } from "lucide-react";
-import { getApiUrl } from "@/lib/apiConfig"; // ✅ Add this import at the top
+import { UserPlus, Phone, Mail, MapPin, Search, Edit, Trash2 } from "lucide-react";
+import { getApiUrl } from "@/lib/apiConfig";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 interface Customer {
@@ -177,17 +188,77 @@ const Customers = () => {
                         <span className="truncate">{customer.email}</span>
                       </Badge>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="flex-shrink-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/customers/${customer.id}`);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/customers/${customer.id}`);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="flex-shrink-0 text-destructive hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete customer "{customer.name}"? This action cannot be undone and will also delete all associated pledges.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const token = localStorage.getItem("token");
+                                  const apiUrl = getApiUrl();
+                                  const response = await fetch(`${apiUrl}/customers/${customer.id}`, {
+                                    method: "DELETE",
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  });
+
+                                  if (response.ok) {
+                                    const result = await response.json();
+                                    if (result.success) {
+                                      toast.success("Customer deleted successfully");
+                                      fetchCustomers(); // Refresh the list
+                                    } else {
+                                      toast.error(result.message || "Failed to delete customer");
+                                    }
+                                  } else {
+                                    const errorData = await response.json().catch(() => ({ message: "Failed to delete customer" }));
+                                    toast.error(errorData.message || "Failed to delete customer");
+                                  }
+                                } catch (error) {
+                                  toast.error("Error deleting customer");
+                                }
+                              }}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                   
                   <div className="space-y-2 pt-4 border-t border-border">
