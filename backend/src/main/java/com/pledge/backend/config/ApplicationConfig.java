@@ -51,7 +51,13 @@ public class ApplicationConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Use patterns - Spring supports both exact matches and wildcards in patterns
+        // when allowCredentials is true (Spring Security 5.3+)
         configuration.setAllowedOriginPatterns(Arrays.asList(
+            "https://www.godejewellers.in",
+            "https://godejewellers.in",
+            "https://*.godejewellers.in",
             "http://localhost:*",
             "https://localhost:*",
             "http://127.0.0.1:*",
@@ -62,8 +68,9 @@ public class ApplicationConfig {
             "https://*.vercel.app",
             "https://*.vercel.app:*"
         ));
+        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("authorization", "Authorization", "content-type", "x-auth-token"));
+        configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization"));
         configuration.setAllowCredentials(true);
 
