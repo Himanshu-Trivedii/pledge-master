@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, MapPin, FileText, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { formatIndianCurrency } from "@/lib/utils";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface Customer {
   id: number;
@@ -48,10 +49,7 @@ const CustomerDetail = () => {
     const fetchCustomerData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const apiUrl = localStorage.getItem('apiUrl') || 
-                       (window.location.hostname !== 'localhost' 
-                         ? `http://${window.location.hostname}:8099/api` 
-                         : 'http://localhost:8099/api');
+        const apiUrl = getApiUrl();
         
         // Fetch customer details
         const customerResponse = await fetch(

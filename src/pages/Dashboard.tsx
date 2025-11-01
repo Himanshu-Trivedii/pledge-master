@@ -3,6 +3,7 @@ import StatsCard from "@/components/StatsCard";
 import { Users, Package, IndianRupee, TrendingUp, TrendingDown, DollarSign, Coins } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface DashboardStats {
   totalCustomers: number;
@@ -52,10 +53,7 @@ const Dashboard = () => {
     // Fetch dashboard stats from backend
     const fetchStats = async () => {
       const token = localStorage.getItem("token");
-      const apiUrl = localStorage.getItem('apiUrl') || 
-                     (window.location.hostname !== 'localhost' 
-                       ? `http://${window.location.hostname}:8099/api` 
-                       : 'http://localhost:8099/api');
+      const apiUrl = getApiUrl();
       try {
         const response = await fetch(`${apiUrl}/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` },

@@ -55,11 +55,7 @@ const NewPledgeSimple = () => {
         const token = localStorage.getItem("token");
         const apiUrl = getApiUrl();
 
-		  const response = await fetch(`${apiUrl}/api/customers`, {
-
-			  // const response = await fetch("http://localhost:8099/api/customers", {
-
-
+        const response = await fetch(`${apiUrl}/customers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         
@@ -138,13 +134,8 @@ const NewPledgeSimple = () => {
         receiptPhoto: receiptPhotoUrl || undefined,
       };
 
-      // const response = await fetch("http://localhost:8099/api/pledges", {
-
-		const response = await fetch(`${apiUrl}/api/pledges`, {
-
-
-
-			method: 'POST',
+      const response = await fetch(`${apiUrl}/pledges`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

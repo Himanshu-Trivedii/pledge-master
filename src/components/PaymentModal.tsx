@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { interestApi, } from "@/lib/api";
 import { formatIndianCurrency } from "@/lib/utils";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface PaymentModalProps {
   open: boolean;
@@ -66,8 +67,7 @@ export const PaymentModal = ({
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const apiUrl = localStorage.getItem('apiUrl') || 
-        (window.location.hostname !== 'localhost' ? `http://${window.location.hostname}:8099/api` : 'http://localhost:8099/api');
+      const apiUrl = getApiUrl();
 
       const payload = {
         pledgeId,

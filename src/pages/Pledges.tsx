@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Plus, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatIndianCurrency } from "@/lib/utils";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface Pledge {
   id: number;
@@ -34,10 +35,7 @@ const Pledges = () => {
     const fetchPledges = async () => {
       try {
         const token = localStorage.getItem("token");
-        const apiUrl = localStorage.getItem('apiUrl') || 
-                       (window.location.hostname !== 'localhost' 
-                         ? `http://${window.location.hostname}:8099/api` 
-                         : 'http://localhost:8099/api');
+        const apiUrl = getApiUrl();
         const response = await fetch(`${apiUrl}/pledges`, {
           headers: {
             Authorization: `Bearer ${token}`,
