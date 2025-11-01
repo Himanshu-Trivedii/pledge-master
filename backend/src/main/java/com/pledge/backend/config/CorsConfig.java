@@ -6,7 +6,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class CorsConfig {
@@ -15,26 +15,22 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Allowed frontend origins
-        config.setAllowedOriginPatterns(Arrays.asList(
+        // ✅ Allowed Origins (include both www and non-www)
+        config.setAllowedOrigins(List.of(
                 "https://www.godejewellers.in",
                 "https://godejewellers.in",
                 "https://pledge-master.vercel.app",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://127.0.0.1:3000"
         ));
 
-        // ✅ Allow credentials (for cookies or tokens)
+        // ✅ Credentials & Headers
         config.setAllowCredentials(true);
-
-        // ✅ Allow all headers and methods
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-
-        // ✅ Expose key headers
         config.addExposedHeader("Authorization");
-        config.addExposedHeader("Content-Disposition");
 
-        // ✅ Apply to all routes
+        // ✅ Register for all paths
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
