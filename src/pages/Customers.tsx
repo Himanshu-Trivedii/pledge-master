@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserPlus, Phone, Mail, MapPin, Search, Edit } from "lucide-react";
+import { getApiUrl } from "@/lib/apiConfig"; // ✅ Add this import at the top
+
 
 interface Customer {
   id: number;
@@ -46,36 +48,65 @@ const Customers = () => {
     }
   }, [searchTerm, customers]);
 
-  const fetchCustomers = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const apiUrl = localStorage.getItem('apiUrl') || 
-                     (window.location.hostname !== 'localhost' 
-                       ? `http://${window.location.hostname}:8099/api` 
-                       : 'http://localhost:8099/api');
-      const response = await fetch(`${apiUrl}/customers`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const fetchCustomers = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const apiUrl = getApiUrl(); // ✅ Use the centralized function
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setCustomers(data.data);
-          setFilteredCustomers(data.data);
-        } else {
-          toast.error(data.message || "Failed to fetch customers");
+            const response = await fetch(`${apiUrl}/customers`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    setCustomers(data.data);
+                    setFilteredCustomers(data.data);
+                } else {
+                    toast.error(data.message || "Failed to fetch customers");
+                }
+            } else {
+                toast.error("Failed to fetch customers");
+            }
+        } catch (error) {
+            toast.error("Error connecting to the server");
+        } finally {
+            setLoading(false);
         }
-      } else {
-        toast.error("Failed to fetch customers");
-      }
-    } catch (error) {
-      toast.error("Error connecting to the server");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+  // const fetchCustomers = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const apiUrl = localStorage.getItem('apiUrl') ||
+  //                    (window.location.hostname !== 'localhost'
+  //                      ? `http://${window.location.hostname}:8099/api`
+  //                      : 'http://localhost:8099/api');
+  //     const response = await fetch(`${apiUrl}/customers`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       if (data.success) {
+  //         setCustomers(data.data);
+  //         setFilteredCustomers(data.data);
+  //       } else {
+  //         toast.error(data.message || "Failed to fetch customers");
+  //       }
+  //     } else {
+  //       toast.error("Failed to fetch customers");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Error connecting to the server");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <Layout>
