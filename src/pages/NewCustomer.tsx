@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { z } from "zod";
+import { getApiUrl } from "@/lib/apiConfig";
+
 
 const customerSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
@@ -43,49 +45,96 @@ const
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
+        const handleSubmit = async (e: React.FormEvent) => {
+            e.preventDefault();
+            setErrors({});
 
-    // Validate form data
-    const result = customerSchema.safeParse(formData);
-    if (!result.success) {
-      const fieldErrors: Partial<Record<keyof CustomerFormData, string>> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0] as keyof CustomerFormData] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
-      toast.error("Please fix the errors in the form");
-      return;
-    }
+            // Validate form data
+            const result = customerSchema.safeParse(formData);
+            if (!result.success) {
+                const fieldErrors: Partial<Record<keyof CustomerFormData, string>> = {};
+                result.error.errors.forEach((err) => {
+                    if (err.path[0]) {
+                        fieldErrors[err.path[0] as keyof CustomerFormData] = err.message;
+                    }
+                });
+                setErrors(fieldErrors);
+                toast.error("Please fix the errors in the form");
+                return;
+            }
 
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-		const response = await fetch("http://192.168.1.9:8099/api/customers", {
-			method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(result.data),
-      });
+            setLoading(true);
+            try {
+                const token = localStorage.getItem("token");
+                const apiUrl = getApiUrl(); // ✅ Use centralized config
 
-      if (response.ok) {
-        toast.success("Customer created successfully!");
-        navigate("/customers");
-      } else {
-        const errorData = await response.json().catch(() => ({ message: "Failed to create customer" }));
-        toast.error(errorData.message || "Failed to create customer");
-      }
-    } catch (error) {
-      toast.error("Connection error. Please check your backend server.");
-    } finally {
-      setLoading(false);
-    }
-  };
+                const response = await fetch(`${apiUrl}/customers`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(result.data),
+                });
+
+                if (response.ok) {
+                    toast.success("Customer created successfully!");
+                    navigate("/customers");
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: "Failed to create customer" }));
+                    toast.error(errorData.message || "Failed to create customer");
+                }
+            } catch (error) {
+                toast.error("Connection error. Please check your backend server.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+
+  //       const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setErrors({});
+  //
+  //   // Validate form data
+  //   const result = customerSchema.safeParse(formData);
+  //   if (!result.success) {
+  //     const fieldErrors: Partial<Record<keyof CustomerFormData, string>> = {};
+  //     result.error.errors.forEach((err) => {
+  //       if (err.path[0]) {
+  //         fieldErrors[err.path[0] as keyof CustomerFormData] = err.message;
+  //       }
+  //     });
+  //     setErrors(fieldErrors);
+  //     toast.error("Please fix the errors in the form");
+  //     return;
+  //   }
+  //
+  //   setLoading(true);
+  //   try {
+  //     const token = localStorage.getItem("token");
+	// 	const response = await fetch("http://192.168.1.9:8099/api/customers", {
+	// 		method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify(result.data),
+  //     });
+  //
+  //     if (response.ok) {
+  //       toast.success("Customer created successfully!");
+  //       navigate("/customers");
+  //     } else {
+  //       const errorData = await response.json().catch(() => ({ message: "Failed to create customer" }));
+  //       toast.error(errorData.message || "Failed to create customer");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Connection error. Please check your backend server.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <Layout>
