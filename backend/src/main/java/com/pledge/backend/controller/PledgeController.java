@@ -5,6 +5,7 @@ import com.pledge.backend.dto.request.PaymentRequest;
 import com.pledge.backend.dto.response.ApiResponse;
 import com.pledge.backend.dto.response.PledgeResponse;
 import com.pledge.backend.service.PledgeService;
+import com.pledge.backend.service.EmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,16 +16,20 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/pledges")
 public class PledgeController {
 	private final PledgeService pledgeService;
+    private final EmailService emailService;
 
-	public PledgeController(PledgeService pledgeService) {
-		this.pledgeService = pledgeService;
-	}
+    public PledgeController(PledgeService pledgeService, EmailService emailService) {
+        this.pledgeService = pledgeService;
+        this.emailService = emailService;
+    }
 
     @PostMapping
     public PledgeResponse createPledge(@Valid @RequestBody PledgeRequest request) {
 		System.out.println("Received pledge request: " + request);
 		try {
 			PledgeResponse response = pledgeService.createPledge(request);
+			// Fire-and-forget email send
+			try { com.pledge.backend.entity.PledgeEntity e = new com.pledge.backend.entity.PledgeEntity(); e.setId(response.getId()); e.setCustomerId(response.getCustomerId()); e.setAmount(response.getAmount()); e.setInterestRate(response.getInterestRate()); e.setCustomerPhoto(response.getCustomerPhoto()); e.setItemPhoto(response.getItemPhoto()); e.setReceiptPhoto(response.getReceiptPhoto()); if (emailService != null) emailService.sendPledgePhotosEmail(e, "godejewellers023@gmail.com"); } catch (Exception ignored) {}
 			System.out.println("Pledge created successfully: " + response.getId());
 			return response;
 		} catch (Exception e) {
@@ -55,7 +60,9 @@ public class PledgeController {
 
     @PutMapping("/{id}")
     public PledgeResponse updatePledge(@PathVariable Long id, @Valid @RequestBody PledgeRequest request) {
-        return pledgeService.updatePledge(id, request);
+        PledgeResponse response = pledgeService.updatePledge(id, request);
+        try { com.pledge.backend.entity.PledgeEntity e = new com.pledge.backend.entity.PledgeEntity(); e.setId(response.getId()); e.setCustomerId(response.getCustomerId()); e.setAmount(response.getAmount()); e.setInterestRate(response.getInterestRate()); e.setCustomerPhoto(response.getCustomerPhoto()); e.setItemPhoto(response.getItemPhoto()); e.setReceiptPhoto(response.getReceiptPhoto()); if (emailService != null) emailService.sendPledgePhotosEmail(e, "godejewellers023@gmail.com"); } catch (Exception ignored) {}
+        return response;
     }
 
 	@PostMapping("/{id}/payments")

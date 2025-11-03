@@ -46,6 +46,10 @@ public class PledgeEntity {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
+	// 7.1️⃣ last_interest_accrued_at
+	@Column(name = "last_interest_accrued_at")
+	private LocalDateTime lastInterestAccruedAt;
+
 	// 8️⃣ deadline
 	@Column(name = "deadline")
 	private LocalDateTime deadline;

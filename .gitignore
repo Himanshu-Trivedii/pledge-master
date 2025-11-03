@@ -1,3 +1,40 @@
+# Java / Maven
+**/target/
+**/.mvn/
+*.class
+*.jar
+*.war
+*.ear
+
+# Spring Boot logs
+*.log
+
+# Node / React
+node_modules/
+**/dist/
+**/build/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# IDE / OS files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Coverage / cache
+coverage/
+.nyc_output/
+**/.cache/
+
+# Misc
+*.swp
+*.swo
+
 # Logs
 logs
 *.log

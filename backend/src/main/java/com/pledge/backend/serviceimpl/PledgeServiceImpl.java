@@ -54,6 +54,7 @@ public class PledgeServiceImpl implements PledgeService {
 										  .amount(request.getAmount())
                                           .interestRate(interestRate)
 										  .createdAt(java.time.LocalDateTime.now())
+										  .lastInterestAccruedAt(java.time.LocalDateTime.now())
 										  .deadline(request.getDeadline())
 									  .status(request.getStatus())
 									  .itemType(request.getItemType())
@@ -102,20 +103,45 @@ public class PledgeServiceImpl implements PledgeService {
 		PledgeEntity pledge = pledgeRepository.findById(id)
 											  .orElseThrow(() -> new IllegalArgumentException("Pledge not found"));
 
-		// Calculate interest rate based on amount using InterestCalculationService
-		Double interestRate = interestCalculationService.getInterestRate(request.getAmount());
+		// Determine if the interest rate is changing; only then accrue up to now
+		boolean isRateChanging = request.getInterestRate() != null
+			&& request.getInterestRate() > 0
+			&& (pledge.getInterestRate() == null || !request.getInterestRate().equals(pledge.getInterestRate()));
 
+		if (isRateChanging) {
+			java.time.LocalDateTime now = java.time.LocalDateTime.now();
+			java.time.LocalDateTime accrualStart = pledge.getLastInterestAccruedAt() != null ? pledge.getLastInterestAccruedAt() : pledge.getCreatedAt();
+			long daysElapsed = java.time.temporal.ChronoUnit.DAYS.between(accrualStart, now);
+			double principal = pledge.getAmount() == null ? 0.0 : pledge.getAmount();
+			double oldMonthlyRatePercent = pledge.getInterestRate() == null ? 0.0 : pledge.getInterestRate();
+			double dailyRate = (oldMonthlyRatePercent / 100.0) / 30.0;
+			double accrued = principal * dailyRate * Math.max(0L, daysElapsed);
+			pledge.setAmount(principal + accrued);
+			pledge.setLastInterestAccruedAt(now);
+		}
+
+		// Apply incoming edits and set the NEW rate (prefer owner-provided, else keep old)
 		pledge.setTitle(request.getTitle());
 		pledge.setDescription(request.getDescription());
-		pledge.setAmount(request.getAmount());
-		pledge.setInterestRate(interestRate);
 		pledge.setDeadline(request.getDeadline());
 		pledge.setItemType(request.getItemType());
 		pledge.setWeight(request.getWeight());
 		pledge.setPurity(request.getPurity());
 		pledge.setNotes(request.getNotes());
 		pledge.setStatus(request.getStatus());
-		pledge.setCreatedAt(pledge.getCreatedAt()); // keep original
+		pledge.setCustomerPhoto(request.getCustomerPhoto());
+		pledge.setItemPhoto(request.getItemPhoto());
+		pledge.setReceiptPhoto(request.getReceiptPhoto());
+
+		Double newRate = request.getInterestRate() != null && request.getInterestRate() > 0
+				? request.getInterestRate()
+				: pledge.getInterestRate();
+		pledge.setInterestRate(newRate);
+
+		// If amount is provided, respect the edited principal
+		if (request.getAmount() != null && request.getAmount() > 0) {
+			pledge.setAmount(request.getAmount());
+		}
 
 		PledgeEntity updated = pledgeRepository.save(pledge);
 		return toResponse(updated);

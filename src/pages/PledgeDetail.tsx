@@ -65,6 +65,8 @@ const PledgeDetail = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [editAmountMode, setEditAmountMode] = useState(false);
   const [editedAmount, setEditedAmount] = useState<number | null>(null);
+  const [editRateMode, setEditRateMode] = useState(false);
+  const [editedRate, setEditedRate] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchPledgeData = async () => {
@@ -382,7 +384,60 @@ const PledgeDetail = () => {
 
               <div className="p-4 bg-gold/10 rounded-lg border border-gold/20">
                 <p className="text-sm text-muted-foreground">Interest Rate</p>
-                <p className="text-2xl font-bold text-gold">{(pledge.interestRate ?? 0).toFixed(2)}%</p>
+                {editRateMode ? (
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <Input
+                      type="number"
+                      min={0.01}
+                      step="0.01"
+                      value={editedRate ?? pledge.interestRate ?? 0}
+                      onChange={e => setEditedRate(Number(e.target.value))}
+                      className="w-32 sm:w-36"
+                    />
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" onClick={async () => {
+                        setEditRateMode(false);
+                        if (typeof editedRate === 'number' && editedRate > 0 && editedRate !== pledge.interestRate) {
+                          try {
+                            const token = localStorage.getItem("token");
+                            const apiUrl = getApiUrl();
+                            const payload: any = { ...pledge, interestRate: editedRate };
+                            if (!payload.pledgeDuration) payload.pledgeDuration = 12;
+                            const response = await fetch(`${apiUrl}/pledges/${pledge.id}`, {
+                              method: "PUT",
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`
+                              },
+                              body: JSON.stringify(payload)
+                            });
+                            if (response.ok) {
+                              const data = await response.json();
+                              toast.success("Interest rate updated");
+                              setPledge(current => ({ ...current!, ...data }));
+                            } else {
+                              const errorText = await response.text();
+                              let errorMessage = "Failed to update interest";
+                              try {
+                                const errorData = JSON.parse(errorText);
+                                errorMessage = errorData.message || errorText;
+                              } catch {}
+                              toast.error(errorMessage);
+                            }
+                          } catch {
+                            toast.error("Network error");
+                          }
+                        }
+                      }}>Save</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setEditRateMode(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-2xl font-bold text-gold">{(pledge.interestRate ?? 0).toFixed(2)}%</p>
+                    <Button variant="outline" size="sm" onClick={() => { setEditRateMode(true); setEditedRate(pledge.interestRate ?? 0); }}>Edit</Button>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground mt-1">monthly</p>
               </div>
 
