@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
     private static final String ADMIN_USERNAME = "Akash";
-    private static final String ADMIN_PASSWORD = "Akash@123www";
+    private static final String ADMIN_PASSWORD = "Arekgnvhdenhjg";
 
     @Autowired
     private JwtUtil jwtUtil;
